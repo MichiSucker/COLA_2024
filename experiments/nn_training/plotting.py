@@ -5,7 +5,8 @@ from helpers import set_size
 
 
 def create_plot(loading_path: str) -> None:
-    """Create the plot for the evaluation (as it is presented in the AISTATS 2025 submission).
+    """Create the plot for the evaluation of the neural-network-training experiment as it is presented in the
+    AISTATS 2025 submission.
 
     :param loading_path: path, where the data of 'evaluation.py' is stored, and where the plot will be saved in the end.
     :return: None
