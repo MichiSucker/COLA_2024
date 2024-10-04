@@ -22,9 +22,10 @@ def get_data(neural_network: nn.Module,
     :param deg_poly: degree of polynomials being constructed (default: 5)
     :param noise_level: standard-deviation of noise added to observations (zero-mean normal distribution)
 
-    :returns: \1. loss_function: template of the loss-function of the optimization algorithm
-             2. criterion: loss-function of the neural network
-             3. parameters
+    :returns: \1. template of the loss-function of the optimization algorithm
+             2. loss-function of the neural network
+             3. dictionary containing the parameters of the loss-functions as lists (separated into 'prior',
+    'train', etc.)
     """
 
     # Define loss function of neural network
