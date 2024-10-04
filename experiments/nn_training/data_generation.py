@@ -68,6 +68,8 @@ def get_data(neural_network: nn.Module,
                                      'coefficients': coefficients, 'gt': gt,
                                      'opt_val': torch.tensor(0.0)})
 
+    # Define the loss-function of the algorithm.
+    # This is the concatenation of the loss-function of the neural network (criterion) with the neural network itself.
     def loss_function(x: torch.Tensor, parameter: dict) -> torch.Tensor:
         """This is the loss-function of the optimization algorithm.
         :param x: the parameters of the neural network, that is, the optimization-variable for the algorithm
