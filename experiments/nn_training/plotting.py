@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
-from typing import Tuple
+from helpers import set_size
 
 
 def create_plot(loading_path: str) -> None:
