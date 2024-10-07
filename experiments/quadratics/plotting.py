@@ -28,7 +28,7 @@ def create_plot(loading_path: str) -> None:
         "ytick.labelsize": 7
     }
     plt.rcParams.update(tex_fonts)
-    names = {'std': 'HBF', 'pac': 'Learned', 'other': 'other'},
+    names = {'std': 'HBF', 'pac': 'Learned', 'other': 'other'}
     colors = {'std': '#3a86ff', 'pac': '#ff006e', 'other': '#8338ec', 'pac_bound': '#fb5607', 'conv_prob': '#ffbe0b'}
 
     # Load data. It is assumed that the function 'evaluation.py' was run before.
