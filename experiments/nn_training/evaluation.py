@@ -144,7 +144,6 @@ def evaluate_nn(loading_path: str) -> None:
     # Instantiate empty containers to store everything in
     iterates_pac = np.empty((len(test_functions), n_test+1, dim))
     iterates_std = np.empty((len(test_functions), n_test+1, dim))
-    solutions = np.empty((len(test_functions), dim))
     losses_pac, losses_std = [], []
     gradients_pac, gradients_std = [], []
     dist_pac, dist_std = [], []
@@ -226,7 +225,6 @@ def evaluate_nn(loading_path: str) -> None:
     np.save(loading_path + 'gradients_std', gradients_std)
     np.save(loading_path + 'dist_pac', dist_pac)
     np.save(loading_path + 'dist_std', dist_std)
-    np.save(loading_path + 'solutions', solutions)
     np.save(loading_path + 'suff_desc_prob', suff_desc_prob)
     with open(loading_path + 'parameters_problem', 'wb') as file:
         pickle.dump(parameters['test'], file)
