@@ -2,7 +2,8 @@ import torch
 from typing import Tuple, Callable
 
 
-def get_data(dim: int, n_prior: int, n_train: int, n_val: int, n_test: int) -> Tuple[dict, Callable]:
+def get_data(dim: int,
+             n_prior: int, n_train: int, n_val: int, n_test: int) -> Tuple[dict, Callable, torch.Tensor, torch.Tensor]:
     """Generate data for the experiment on quadratic functions.
 
     :param dim: dimension of the optimization variable.
@@ -53,4 +54,4 @@ def get_data(dim: int, n_prior: int, n_train: int, n_val: int, n_test: int) -> T
     def loss_function(x, parameter):
         return 0.5 * torch.linalg.norm(torch.matmul(parameter['A'], x) - parameter['b']) ** 2
 
-    return parameters, loss_function
+    return parameters, loss_function, mu_min, L_max
