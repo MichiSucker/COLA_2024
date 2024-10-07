@@ -49,7 +49,7 @@ class LearnedAlgorithm(nn.Module):
         in_size = 4
         h_size = 10
         out_size = 1
-        self.step_size_layer = nn.Sequential(
+        self.coefficients = nn.Sequential(
             nn.Linear(in_size, 3 * h_size, bias=False),
             nn.Linear(3 * h_size, 3 * h_size, bias=False),
             nn.ReLU(),
@@ -91,7 +91,7 @@ class LearnedAlgorithm(nn.Module):
         ), dim=1)).flatten()
 
         # Get step-size with step_size_layer
-        step_size = self.step_size_layer(
+        step_size = self.coefficients(
             torch.concat(
                 (torch.log(1 + grad_norm.reshape((1,))),
                  torch.log(1 + diff_norm.reshape((1,))),
