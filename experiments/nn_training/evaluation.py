@@ -140,7 +140,7 @@ def evaluate_nn(loading_path: str) -> None:
         loss_function=test_functions[0],
         n_max=n_train
     )
-    opt_algo.implementation.load_state_dict(torch.load(loading_path + 'model.pt'))
+    opt_algo.implementation.load_state_dict(torch.load(loading_path + 'model.pt', weights_only=True))
 
     # Instantiate empty containers to store everything in
     iterates_pac = np.empty((len(test_functions), n_test+1, dim))
