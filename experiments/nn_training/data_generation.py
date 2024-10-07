@@ -57,7 +57,7 @@ def get_data(neural_network: nn.Module,
             xes = xes.reshape((-1, 1))
 
             # Create polynomials and evaluate them at x-values
-            coefficients = coefficient_distribution.sample(torch.Size((deg_poly, )))
+            coefficients = coefficient_distribution.sample(torch.Size((deg_poly + 1, )))
             gt = torch.sum(coefficients * (xes ** powers), dim=1).reshape((-1, 1))
 
             # Create y-values
