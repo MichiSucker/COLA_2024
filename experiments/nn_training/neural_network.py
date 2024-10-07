@@ -3,6 +3,53 @@ import torch.nn as nn
 import torch.nn.functional as f
 
 
+def polynomial_features(x: torch.Tensor, degree: int) -> torch.Tensor:
+    """Transform input x into higher-dimensional tensor [x**1, ..., x**degree]
+
+    :param x: input to neural network
+    :param degree: degree of polynomial features
+    :return: higher-dimensional, transformed input
+    """
+    x = x.unsqueeze(1)
+    return torch.cat([x ** i for i in range(1, degree + 1)], 1).reshape((-1, degree))
+
+
+class NetStdTraining(nn.Module):
+    """Class that implements the neural network which is used to perform the regression.
+
+    Attributes
+    ----------
+        degree : int
+            degree of polynomial features, that is, the input x gets transformed into [x**1, ..., x**degree]
+
+    Methods
+    -------
+        forward
+            performs the prediction with the neural network in such a way (torch.nn.functional) that we can
+            back-propagate through it to train the optimization algorithm
+    """
+
+    def __init__(self, degree: int):
+        """Instantiate a NetStdTraining-object, which is used to get performance of Adam.
+
+        :param degree: degree of the polynomial features, which are used in the input of the neural network
+        """
+        super().__init__()
+        self.degree = degree
+        self.fc1 = nn.Linear(self.degree, 10 * self.degree)
+        self.fc2 = nn.Linear(10 * self.degree, 1)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """Performs the update of the neural network.
+
+        :param x: input to neural network
+        :return: prediction of neural network
+        """
+        x = f.relu(self.fc1(polynomial_features(x=x, degree=self.degree)))
+        res = self.fc2(x)
+        return res
+
+
 class Net(nn.Module):
     """Class that implements the neural network which is used to perform the regression.
 
@@ -19,8 +66,6 @@ class Net(nn.Module):
         forward
             performs the prediction with the neural network in such a way (torch.nn.functional) that we can
             back-propagate through it to train the optimization algorithm
-        polynomial_features
-            transforms the input x of the neural network into the features [x**1, x**2, ..., x**degree]
     """
 
     def __init__(self, degree: int, shape_parameters: list) -> None:
@@ -44,7 +89,7 @@ class Net(nn.Module):
         """
 
         # Transform input into higher-dimensional object
-        x = self.polynomial_features(x)
+        x = polynomial_features(x=x, degree=self.degree)
 
         # From the neural_net_parameters (prediction of optimization algorithm), extract the weights of the neural
         # network into the corresponding torch.nn.functional-functions. Then, perform the prediction in the usual way,
@@ -65,12 +110,3 @@ class Net(nn.Module):
             if len(self.shape_param) > 2 and (i+2 < len(self.dim_param)):
                 x = f.relu(x)
         return x
-
-    def polynomial_features(self, x: torch.Tensor) -> torch.Tensor:
-        """Transform input x into higher-dimensional tensor [x**1, ..., x**degree]
-
-        :param x: input to neural network
-        :return: higher-dimensional, transformed input
-        """
-        x = x.unsqueeze(1)
-        return torch.cat([x ** i for i in range(1, self.degree + 1)], dim=1).reshape((-1, self.degree))
