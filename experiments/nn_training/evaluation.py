@@ -42,11 +42,12 @@ def estimate_suff_desc_prob(test_functions: list,
     return np.array(suff_desc_prob).flatten()
 
 
-def compute_iterates(algo, num_iterates) -> Tuple[NDArray, list, list]:
+def compute_iterates(algo: OptimizationAlgorithm, num_iterates: int, dim: int) -> Tuple[NDArray, list, list]:
     """Compute a given number of iterates with the algorithm and the corresponding losses and gradient-norms.
 
     :param algo: the optimization algorithm as OptimizationAlgorithm-object.
     :param num_iterates: number of iterates
+    :param dim: dimension of optimization variable
     :return: \1) the iterates
              2) the corresponding loss
              3) the corresponding gradient-norms
@@ -157,7 +158,7 @@ def evaluate_nn(loading_path: str) -> None:
         opt_algo.set_loss_function(f)
 
         # Compute iterates and corresponding losses/gradient-norms of learned algorithm.
-        cur_iterates, cur_losses_pac, cur_grad_pac = compute_iterates(algo=opt_algo, num_iterates=n_test)
+        cur_iterates, cur_losses_pac, cur_grad_pac = compute_iterates(algo=opt_algo, num_iterates=n_test, dim=dim)
 
         # Approximate stationary points for learned algorithm by running gradient descent with small step-size for a
         # large number of steps. Here, make sure that the network is set correctly, that is, set it to the last
