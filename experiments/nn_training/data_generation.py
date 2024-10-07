@@ -52,12 +52,12 @@ def get_data(neural_network: nn.Module,
 
             # Create observations:
             # Create x-values
-            xes = datapoint_distribution.sample(torch.Size(n_obs_problem, ))
+            xes = datapoint_distribution.sample(torch.Size((n_obs_problem, )))
             xes, _ = torch.sort(xes)    # Sort them already now. This is needed, at least, for plotting.
             xes = xes.reshape((-1, 1))
 
             # Create polynomials and evaluate them at x-values
-            coefficients = coefficient_distribution.sample(torch.Size(deg_poly, ))
+            coefficients = coefficient_distribution.sample(torch.Size((deg_poly, )))
             gt = torch.sum(coefficients * (xes ** powers), dim=1).reshape((-1, 1))
 
             # Create y-values
