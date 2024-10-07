@@ -132,4 +132,4 @@ def create_plot(loading_path: str) -> None:
 
     # Save plot into the folder, where the data was loaded from.
     plt.tight_layout()
-    fig.savefig(loading_path + '/evaluation_one_line.pdf', dpi=300, bbox_inches='tight')
+    fig.savefig(loading_path + '/evaluation.pdf', dpi=300, bbox_inches='tight')
