@@ -1,6 +1,5 @@
 import torch
 import torch.nn as nn
-
 from classes.OptimizationAlgorithm.class_OptimizationAlgorithm import OptimizationAlgorithm
 
 
