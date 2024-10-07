@@ -8,37 +8,37 @@ class OptimizationAlgorithm:
 
     Attributes
     ----------
-    initial_state : torch.Tensor
-        the initialization of the algorithm
-    implementation : nn.Module
-        the implementation of the algorithmic update as nn.Module
-    stopping_criterion : Callable
-        the stopping criterion of the algorithm
-    loss_function : LossFunction
-        the function that should be optimized by the algorithm
-    n_max : int
-        maximal number of iterations to perform
-    constraint : Constraint
-        the constraint for the algorithm
+        initial_state : torch.Tensor
+            the initialization of the algorithm
+        implementation : nn.Module
+            the implementation of the algorithmic update as nn.Module
+        stopping_criterion : Callable
+            the stopping criterion of the algorithm
+        loss_function : LossFunction
+            the function that should be optimized by the algorithm
+        n_max : int
+            maximal number of iterations to perform
+        constraint : Constraint
+            the constraint for the algorithm
 
     Methods
     -------
-    set_current_state
-        Update the current state of the algorithm. At least, this is computing a new iterate.
-    set_iteration_counter
-        Set the iteration counter to a specific number.
-    set_loss_function
-        Set the loss-function, which the algorithm should optimize.
-    reset_state
-        Reset the state of the algorithm to its initial state.
-    step
-        Perform a single step of the optimization algorithm. This computes a new state.
-    eval_loss
-        Evaluate the given loss-function at the current state.
-    eval_grad
-        Evaluate the gradient of the given loss-function at the current state.
-    eval_constraint
-        Evaluate the given constraint (possibly None) at the current state.
+        set_current_state
+            Update the current state of the algorithm. At least, this is computing a new iterate.
+        set_iteration_counter
+            Set the iteration counter to a specific number.
+        set_loss_function
+            Set the loss-function, which the algorithm should optimize.
+        reset_state
+            Reset the state of the algorithm to its initial state.
+        step
+            Perform a single step of the optimization algorithm. This computes a new state.
+        eval_loss
+            Evaluate the given loss-function at the current state.
+        eval_grad
+            Evaluate the gradient of the given loss-function at the current state.
+        eval_constraint
+            Evaluate the given constraint (possibly None) at the current state.
     """
 
     def __init__(self, initial_state, implementation, stopping_criterion, loss_function, n_max, constraint=None):
