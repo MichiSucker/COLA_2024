@@ -7,13 +7,13 @@ class LossFunction:
 
     Attributes
     ----------
-    func : Callable
-        the loss-function
+        func : Callable
+            the loss-function
 
     Methods
     -------
-    grad
-        Compute the gradient of func by backpropagation.
+        grad
+            Compute the gradient of func by backpropagation.
     """
 
     def __init__(self, func: Callable):
