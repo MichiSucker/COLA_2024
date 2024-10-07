@@ -27,8 +27,8 @@ def get_data(dim: int,
 
     # Create distribution of right-hand sides: First, sample a mean and a matrix C randomly.
     # Then, set cov = C^T @ C to make it positive semi-definite.
-    mean = torch.distributions.uniform.Uniform(-5, 5).sample(torch.Size(dim, ))
-    cov = torch.distributions.uniform.Uniform(-5, 5).sample(torch.Size(dim, dim))
+    mean = torch.distributions.uniform.Uniform(-5, 5).sample(torch.Size((dim, )))
+    cov = torch.distributions.uniform.Uniform(-5, 5).sample(torch.Size((dim, dim)))
     cov = torch.transpose(cov, 0, 1) @ cov
     rhs_dist = torch.distributions.multivariate_normal.MultivariateNormal(mean, cov)
 
@@ -37,15 +37,15 @@ def get_data(dim: int,
     for cur_n_functions, name in [(n_prior, 'prior'), (n_train, 'train'), (n_val, 'validation'), (n_test, 'test')]:
 
         # Sample strong convexity and smoothness constants from the corresponding distributions.
-        samples_strong_convexity = str_conv_dist.sample(torch.Size(cur_n_functions, ))
-        samples_smoothness = smooth_dist.sample(torch.Size(cur_n_functions, ))
+        samples_strong_convexity = str_conv_dist.sample(torch.Size((cur_n_functions, )))
+        samples_smoothness = smooth_dist.sample(torch.Size((cur_n_functions, )))
 
         # Create diagonals of quadratic matrix.
         diagonals = [torch.linspace(torch.sqrt(strong_convexity).item(), torch.sqrt(smoothness).item(), dim)
                      for strong_convexity, smoothness in zip(samples_strong_convexity, samples_smoothness)]
 
         # Sample right-hand side from the corresponding distribution.
-        rhs = rhs_dist.sample(torch.Size(cur_n_functions,))
+        rhs = rhs_dist.sample(torch.Size((cur_n_functions,)))
         parameters[name] = [{'A': torch.diag(diagonals[i]), 'b': rhs[i, :], 'opt_val': torch.tensor(0.0)}
                             for i in range(cur_n_functions)]
 
