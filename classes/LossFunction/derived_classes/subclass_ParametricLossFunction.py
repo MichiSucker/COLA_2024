@@ -1,14 +1,32 @@
 from classes.LossFunction.class_LossFunction import LossFunction
+from typing import Callable
 
 
 class ParametricLossFunction(LossFunction):
+    """Class to handle parametric loss-functions. This class inherits from class LossFunction.
 
-    def __init__(self, func, p):
+    Attributes
+    ----------
+        func : Callable
+            the loss-function
+        p : dict
+            the parameter
+
+    Methods
+    -------
+        get_parameter
+            Access the parameter of the loss-function.
+    """
+
+    def __init__(self, func: Callable, p: dict) -> None:
+        """Initialize a ParametricLossFunction-object.
+
+        :param func: the loss-function
+        :param p: the parameter
+        """
         self.parameter = p
         super().__init__(func=lambda x: func(x, self.parameter))
 
-    def __add__(self, other):
-        return LossFunction(func=lambda x: self.f(x) + other.f(x))
-
-    def get_parameter(self):
+    def get_parameter(self) -> dict:
+        """Access the parameter of the loss-function."""
         return self.parameter
