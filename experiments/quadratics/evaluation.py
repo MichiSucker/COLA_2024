@@ -9,8 +9,8 @@ from experiments.quadratics.data_generation import get_data
 from classes.OptimizationAlgorithm.class_OptimizationAlgorithm import OptimizationAlgorithm
 from classes.LossFunction.derived_classes.subclass_ParametricLossFunction import ParametricLossFunction
 from classes.StoppingCriterion.derived_classes.subclass_LossCriterion import LossCriterion
-from algorithms.hbf import HBF
-from algorithms.learned_algorithm import LearnedAlgorithm
+from experiments.quadratics.algorithms.hbf import HBF
+from experiments.quadratics.algorithms.learned_algorithm import LearnedAlgorithm
 
 
 def compute_iterates_and_loss(algo: OptimizationAlgorithm,
