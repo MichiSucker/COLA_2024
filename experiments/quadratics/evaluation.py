@@ -145,7 +145,7 @@ def compute_sq_dist(iterates: NDArray, solutions: NDArray) -> NDArray:
     num_test_problems = iterates.shape[0]
     num_iterates = iterates.shape[1]
     return np.array([[np.linalg.norm(iterates[i, j, :] - solutions[i]) ** 2
-                      for j in range(num_iterates)] for i in range(len(num_test_problems))])
+                      for j in range(num_iterates)] for i in range(num_test_problems)])
 
 
 def compute_data(opt_algo: OptimizationAlgorithm, std_algo: OptimizationAlgorithm, test_functions: list,
