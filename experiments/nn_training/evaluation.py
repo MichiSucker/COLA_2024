@@ -67,7 +67,7 @@ def compute_sq_dist_to_point(iterates, point):
     :param point: corresponding point of shape (dim, )
     :return: list of squared distances between each iterate and the point
     """
-    return [torch.linalg.norm(torch.tensor(iterates[j]) - point).item() ** 2 for j in range(len(iterates))]
+    return [torch.linalg.norm(iterates[j] - point).item() ** 2 for j in range(len(iterates))]
 
 
 def approximate_stationary_point(net: nn.Module, starting_point: torch.Tensor, criterion: Callable,
@@ -159,7 +159,7 @@ def compute_iter_loss_dist_learned_algo(learned_algo: OptimizationAlgorithm,
                                                      data=learned_algo.loss_function.get_parameter(),
                                                      num_it=num_approx_stat_points,
                                                      lr=lr_approx_stat_points)
-    cur_dist_pac = compute_sq_dist_to_point(iterates=cur_iterates, point=approx_stat_point)
+    cur_dist_pac = compute_sq_dist_to_point(iterates=torch.tensor(cur_iterates), point=approx_stat_point)
 
     return cur_iterates, cur_losses_pac, cur_dist_pac
 
@@ -194,7 +194,7 @@ def compute_iter_loss_dist_std_algo(net_std: NetStdTraining, data: dict, criteri
                                                      data=data,
                                                      num_it=num_approx_stat_points,
                                                      lr=lr_approx_stat_points)
-    cur_dist_std = compute_sq_dist_to_point(iterates=np.array(cur_iterates_std), point=approx_stat_point)
+    cur_dist_std = compute_sq_dist_to_point(iterates=cur_iterates_std, point=approx_stat_point)
 
     return cur_iterates_std, cur_losses_std, cur_dist_std
 
