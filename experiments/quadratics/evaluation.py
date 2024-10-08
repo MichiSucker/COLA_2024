@@ -95,7 +95,7 @@ def evaluate_quad(loading_path: str) -> None:
     :param loading_path: path where the trained model is stored, and where the data gets saved into
     """
 
-    print("Starting evaluation of experiment on quadratic function.")
+    print("Starting evaluation.")
 
     # Specify basic tensor types
     torch.set_default_dtype(torch.double)
@@ -213,4 +213,4 @@ def evaluate_quad(loading_path: str) -> None:
     with open(loading_path + 'parameters_problem', 'wb') as f:
         pickle.dump(parameters_problem['test'], f)
 
-    print("End evaluation on quadratic functions.")
+    print("End evaluation.")
