@@ -133,6 +133,52 @@ def init_learned_algo(loading_path, x_0, stop_crit, test_functions, n_train) -> 
     return learned_algo
 
 
+def compute_data(opt_algo, std_algo, test_functions, n_test, stopping_loss):
+
+    # Compute the solution for each problem by solving the linear system.
+    solutions = np.array([np.linalg.solve(f.get_parameter()['A'], f.get_parameter()['b'])
+                          for f in test_functions]).reshape((len(test_functions), dim))
+
+    # Compute the iterates and the corresponding losses for both algorithms
+    iterates_pac = np.empty((len(test_functions), n_test + 1, dim))
+    iterates_std = np.empty((len(test_functions), n_test + 1, dim))
+    losses_pac, losses_std = [], []
+
+    pbar = tqdm(enumerate(test_functions))
+    pbar.set_description("Compute iterates")
+    for i, f in pbar:
+
+        # Reset both algorithms to their initial state and 'give' them the new loss-function.
+        opt_algo.reset_state()
+        std_algo.reset_state()
+        opt_algo.set_loss_function(f)
+        std_algo.set_loss_function(f)
+
+        # Compute iterates and loss of learned algorithm.
+        cur_it_pac, cur_losses_pac = compute_iterates_and_loss(algo=opt_algo, loss_func=f, stopping_loss=stopping_loss,
+                                                               num_iterates=n_test, dim=dim)
+        iterates_pac[i, :, :] = cur_it_pac
+        losses_pac.append(cur_losses_pac)
+
+        # Compute iterates and loss of HBF
+        cur_it_std, cur_losses_std = compute_iterates_and_loss(algo=std_algo, loss_func=f, stopping_loss=stopping_loss,
+                                                               num_iterates=n_test, dim=dim)
+        iterates_std[i, :, :] = cur_it_std
+        losses_std.append(cur_losses_std)
+
+    # Transform the lists into numpy arrays
+    losses_pac = np.array(losses_pac).reshape((len(test_functions), n_test + 1))
+    losses_std = np.array(losses_std).reshape((len(test_functions), n_test + 1))
+
+    # Compute distance to minimizer
+    dist_pac = np.array([[np.linalg.norm(iterates_pac[i, j, :] - solutions[i]) ** 2
+                          for j in range(n_test + 1)] for i in range(len(test_functions))])
+    dist_std = np.array([[np.linalg.norm(iterates_std[i, j, :] - solutions[i]) ** 2
+                          for j in range(n_test + 1)] for i in range(len(test_functions))])
+
+    return iterates_pac, iterates_std, losses_pac, losses_std, dist_pac, dist_std
+
+
 def evaluate_quad(loading_path: str) -> None:
     """Evaluate the trained model for the experiment on quadratic functions.
 
@@ -170,52 +216,9 @@ def evaluate_quad(loading_path: str) -> None:
     opt_algo = init_learned_algo(loading_path=loading_path, x_0=x_0, stop_crit=stop_crit, test_functions=test_functions,
                                  n_train=n_train)
 
-    # Compute the solution for each problem by solving the linear system.
-    solutions = np.array([np.linalg.solve(f.get_parameter()['A'], f.get_parameter()['b'])
-                          for f in test_functions]).reshape((len(test_functions), dim))
-
-    # Compute the iterates and the corresponding losses for both algorithms
-    iterates_pac = np.empty((len(test_functions), n_test+1, dim))
-    iterates_std = np.empty((len(test_functions), n_test+1, dim))
-    losses_pac, losses_std = [], []
-
-    pbar = tqdm(enumerate(test_functions))
-    pbar.set_description("Compute iterates")
-    for i, f in pbar:
-        # Reset both algorithms to their initial state and 'give' them the new loss-function.
-        opt_algo.reset_state()
-        std_algo.reset_state()
-        opt_algo.set_loss_function(f)
-        std_algo.set_loss_function(f)
-
-        # Compute iterates and loss of learned algorithm.
-        cur_it_pac, cur_losses_pac = compute_iterates_and_loss(algo=opt_algo,
-                                                               loss_func=f,
-                                                               stopping_loss=stopping_loss,
-                                                               num_iterates=n_test,
-                                                               dim=dim)
-        iterates_pac[i, :, :] = cur_it_pac
-        losses_pac.append(cur_losses_pac)
-
-        # Compute iterates and loss of HBF
-        cur_it_std, cur_losses_std = compute_iterates_and_loss(algo=std_algo,
-                                                               loss_func=f,
-                                                               stopping_loss=stopping_loss,
-                                                               num_iterates=n_test,
-                                                               dim=dim)
-        iterates_std[i, :, :] = cur_it_std
-        losses_std.append(cur_losses_std)
-
-    # Transform the lists into numpy arrays
-    losses_pac = np.array(losses_pac).reshape((len(test_functions), n_test+1))
-    losses_std = np.array(losses_std).reshape((len(test_functions), n_test+1))
-
-    # Compute distance to minimizer
-    dist_pac = np.array([[np.linalg.norm(iterates_pac[i, j, :] - solutions[i]) ** 2
-                          for j in range(n_test+1)] for i in range(len(test_functions))])
-    dist_std = np.array([[np.linalg.norm(iterates_std[i, j, :] - solutions[i]) ** 2
-                          for j in range(n_test+1)] for i in range(len(test_functions))])
-    num_iterates = np.arange(n_test+1)
+    # Do the actual evaluation
+    iterates_pac, iterates_std, losses_pac, losses_std, dist_pac, dist_std = compute_data(
+        opt_algo=opt_algo, std_algo=std_algo, test_functions=test_functions, n_test=n_test, stopping_loss=stopping_loss)
 
     # Estimate convergence probability on several test sets
     suff_desc_prob, emp_conv_prob = estimate_conv_prob(test_functions=test_functions,
@@ -225,6 +228,7 @@ def evaluate_quad(loading_path: str) -> None:
                                                        stopping_loss=stopping_loss)
 
     # Save data in such a way that it can be reused by the corresponding plotting function
+    num_iterates = np.arange(n_test + 1)
     np.save(loading_path + 'n_train', n_train)
     np.save(loading_path + 'num_iterates', num_iterates)
     np.save(loading_path + 'losses_pac', losses_pac)
@@ -233,7 +237,6 @@ def evaluate_quad(loading_path: str) -> None:
     np.save(loading_path + 'iterates_std', iterates_std)
     np.save(loading_path + 'dist_pac', dist_pac)
     np.save(loading_path + 'dist_std', dist_std)
-    np.save(loading_path + 'solutions', solutions)
     np.save(loading_path + 'suff_desc_prob', suff_desc_prob)
     np.save(loading_path + 'emp_conv_prob', emp_conv_prob)
     with open(loading_path + 'parameters_problem', 'wb') as f:
