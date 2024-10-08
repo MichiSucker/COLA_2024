@@ -114,15 +114,15 @@ def setup_nn(degree: int) -> Tuple[NetStdTraining, Net, int, list]:
     # This is used for
     #   - an easy understanding of the architecture
     #   - benchmark (Adam is used as standard optimization algorithm here)
-    net = NetStdTraining(degree=degree)
+    net_std = NetStdTraining(degree=degree)
 
     # Setup the same neural network with standard tensors (i.e. the neural network is a standard PyTorch-function),
     # such that the optimization algorithm can be trained on it.
-    shape_parameters = [p.size() for p in net.parameters()]
+    shape_parameters = [p.size() for p in net_std.parameters()]
     dim = sum([torch.prod(torch.tensor(s)).item() for s in shape_parameters])
-    neural_net = Net(degree=degree, shape_parameters=shape_parameters)
+    net_learned = Net(degree=degree, shape_parameters=shape_parameters)
 
-    return net, neural_net, dim, shape_parameters
+    return net_std, net_learned, dim, shape_parameters
 
 
 def evaluate_nn(loading_path: str) -> None:
@@ -153,6 +153,8 @@ def evaluate_nn(loading_path: str) -> None:
     shape_parameters = [p.size() for p in net.parameters()]
     dim = sum([torch.prod(torch.tensor(s)).item() for s in shape_parameters])
     neural_net = Net(degree=degree, shape_parameters=shape_parameters)
+
+
 
     # Get test functions (from same distribution as for training) and transform them into
     # ParametricLossFunction-objects, which can be used for training the optimization algorithm.
