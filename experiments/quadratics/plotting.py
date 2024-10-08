@@ -12,6 +12,8 @@ def create_plot(loading_path: str) -> None:
     :return: None
     """
 
+    print("Starting creating plot.")
+
     # Specify plotting parameters
     width = 2 * 234.8775    # AISTATS
     tex_fonts = {
@@ -109,3 +111,5 @@ def create_plot(loading_path: str) -> None:
     # Save plot
     plt.tight_layout()
     fig.savefig(loading_path + '/evaluation.pdf', dpi=300, bbox_inches='tight')
+
+    print("Finished creating plot.")
