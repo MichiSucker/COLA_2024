@@ -181,8 +181,7 @@ def evaluate_nn(loading_path: str) -> None:
                                                          data=f.get_parameter(),
                                                          num_it=num_approx_stat_points,
                                                          lr=lr_approx_stat_points)
-        cur_dist_pac = [torch.linalg.norm(torch.tensor(iterates_pac[i, j, :]) - approx_stat_point).item() ** 2
-                        for j in range(n_test+1)]
+        cur_dist_pac = compute_sq_dist_to_point(iterates=iterates_pac[i], point=approx_stat_point)
 
         # Append results
         losses_pac.append(cur_losses_pac)
@@ -205,8 +204,7 @@ def evaluate_nn(loading_path: str) -> None:
         tensor_to_nn(cur_iterates_std[-1].clone(), template=net)
         approx_stat_point = approximate_stationary_point(net=net, criterion=criterion, data=f.get_parameter(),
                                                          num_it=num_approx_stat_points, lr=lr_approx_stat_points)
-        cur_dist_std = [torch.linalg.norm(torch.tensor(iterates_std[i, j, :]) - approx_stat_point).item() ** 2
-                        for j in range(n_test+1)]
+        cur_dist_std = compute_sq_dist_to_point(iterates=iterates_std[i], point=approx_stat_point)
 
         # Append losses to lists
         losses_std.append(cur_losses_std)
