@@ -16,4 +16,4 @@ def run_experiment_quad(path: str) -> None:
     # Create plot
     create_plot(loading_path=path)
 
-    print(f"End experiment 'Quadratics'.")
+    print(f"Finished experiment 'Quadratics'.")
