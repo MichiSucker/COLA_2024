@@ -130,7 +130,7 @@ def setup_nn(degree: int) -> Tuple[NetStdTraining, Net, int, list]:
 
 def compute_iter_loss_dist_learned_algo(learned_algo: OptimizationAlgorithm,
                                         num_iter: int, net_std: NetStdTraining, criterion: Callable,
-                                        num_approx_stat_points: int, lr_approx_stat_points: float
+                                        num_approx_stat_points: int, lr_approx_stat_points: float, dim: int
                                         ) -> Tuple[NDArray, list, list]:
     """Compute iterates, losses, and distance to 'next' stationary point for the learned algorithm.
 
@@ -140,6 +140,7 @@ def compute_iter_loss_dist_learned_algo(learned_algo: OptimizationAlgorithm,
     :param criterion: loss-function of the neural network
     :param num_approx_stat_points: number of iterations to approximate the stationary point
     :param lr_approx_stat_points: learning rate for approximating the stationary point
+    :param dim: dimension of optimization variable
     :return: \1) The iterates
              2) the corresponding losses
              3) the corresponding distance to the (approx.) stationary point
