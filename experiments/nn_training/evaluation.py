@@ -268,7 +268,7 @@ def compute_data(test_functions: list, num_iter: int, learned_algo: Optimization
     return iterates_pac, iterates_std, losses_pac, losses_std, dist_pac, dist_std
 
 
-def load_algorithm(loading_path: str, test_functions: list, n_train: int) -> OptimizationAlgorithm:
+def load_algorithm(loading_path: str, test_functions: list, n_train: int, dim: int) -> OptimizationAlgorithm:
     """Instantiate and load the learned algorithm.
 
     :param loading_path: path to the trained model (with name 'model.pt'
@@ -331,7 +331,7 @@ def evaluate_nn(loading_path: str) -> None:
     test_functions = [ParametricLossFunction(func=loss_func, p=p) for p in parameters['test']]
 
     # Instantiate algorithm and load its weights.
-    learned_algo = load_algorithm(loading_path=loading_path, test_functions=test_functions, n_train=n_train)
+    learned_algo = load_algorithm(loading_path=loading_path, test_functions=test_functions, n_train=n_train, dim=dim)
 
     # Compute iterates, losses, gradients, distance to (approximate) stationary points, etc.
     iterates_pac, iterates_std, losses_pac, losses_std, dist_pac, dist_std = compute_data(
