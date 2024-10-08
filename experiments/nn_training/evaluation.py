@@ -91,7 +91,7 @@ def evaluate_nn(loading_path: str) -> None:
     ############################################################
     n_train = np.load(loading_path + 'n_train.npy')
     n_test = 2 * n_train
-    num_approx_stat_points, lr_approx_stat_points = int(5e4), 1e-6
+    num_approx_stat_points, lr_approx_stat_points = int(2e3), 1e-6
     conv_stat_points_property, suff_descent_property = get_property_conv_to_stationary_points(n_max=n_train)
 
     # Specify degree of polynomial features
@@ -159,6 +159,7 @@ def evaluate_nn(loading_path: str) -> None:
 
         # Compute iterates and corresponding losses/gradient-norms of learned algorithm.
         cur_iterates, cur_losses_pac, cur_grad_pac = compute_iterates(algo=opt_algo, num_iterates=n_test, dim=dim)
+        iterates_pac[i, :, :] = cur_iterates
 
         # Approximate stationary points for learned algorithm by running gradient descent with small step-size for a
         # large number of steps. Here, make sure that the network is set correctly, that is, set it to the last
