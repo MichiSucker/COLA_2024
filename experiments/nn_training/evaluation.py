@@ -128,6 +128,25 @@ def setup_nn(degree: int) -> Tuple[NetStdTraining, Net, int, list]:
 def compute_data(test_functions: list, num_iter: int, learned_algo: OptimizationAlgorithm,
                  net_std: NetStdTraining, criterion: Callable, lr_adam: float, dim: int
                  ) -> Tuple[NDArray, NDArray, NDArray, NDArray, NDArray, NDArray, NDArray, NDArray]:
+    """Compute the iterates, the losses, the distances to the stationary points and the gradients corresponding to the
+    learned algorithm and adam on the test functions.
+
+    :param test_functions: list of test functions
+    :param num_iter: number of iterations to perform
+    :param learned_algo: the learned algorithm as OptimizationAlgorithm-object
+    :param net_std: the neural-network template (for Adam)
+    :param criterion: loss-function of the neural network
+    :param lr_adam: learning rate for Adam
+    :param dim: dimension of the optimization variable
+    :return: \1) iterates of the learned algorithm
+             2) iterates of Adam
+             3) losses of the learned algorithm
+             4) losses of adam
+             5) distances to stationary points for the learned algorithm
+             6) distances to stationary points for Adam
+             7) gradients of the learned algorithm
+             8) gradients of Adam
+    """
 
     # Fix number of iterations and learning rate for the approximation of stationary points with gradient descent
     num_approx_stat_points, lr_approx_stat_points = int(2e3), 1e-6
