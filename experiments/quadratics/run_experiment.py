@@ -8,8 +8,12 @@ def run_experiment_quad(path: str) -> None:
     :param path: path where the trained model is stored, and where the data/plot get saved into
     """
 
+    print(f"Starting experiment 'Quadratics'.")
+
     # Evaluate model
     evaluate_quad(loading_path=path)
 
     # Create plot
     create_plot(loading_path=path)
+
+    print(f"End experiment 'Quadratics'.")
