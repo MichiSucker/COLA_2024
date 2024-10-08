@@ -84,7 +84,7 @@ def approximate_stationary_point(net: nn.Module, starting_point: torch.Tensor, c
     """
 
     # Load starting point into neural net
-    tensor_to_nn(starting_point, template=net)
+    tensor_to_nn(tensor=starting_point, template=net)
 
     optimizer = torch.optim.SGD(net.parameters(), lr=lr)
     pbar = tqdm(range(num_it))
@@ -174,8 +174,8 @@ def compute_data(test_functions: list, num_iter: int, learned_algo: Optimization
         # large number of steps. Here, make sure that the network is set correctly, that is, set it to the last
         # predicted iterate of the learned algorithm. Finally, compute the (squared) distance of the iterates to this
         # approximate stationary point.
-        tensor_to_nn(learned_algo.current_state[-1].clone(), template=net_std)
         approx_stat_point = approximate_stationary_point(net=net_std,
+                                                         starting_point=learned_algo.current_state[-1].clone(),
                                                          criterion=criterion,
                                                          data=f.get_parameter(),
                                                          num_it=num_approx_stat_points,
@@ -198,9 +198,12 @@ def compute_data(test_functions: list, num_iter: int, learned_algo: Optimization
         # Again, approximate stationary points for Adam. Here, make sure that the network is set correctly, that is, as
         # the last iterate predicted by Adam. Finally, compute the (squared) distance of the iterates to this
         # approximate stationary point.
-        tensor_to_nn(cur_iterates_std[-1].clone(), template=net_std)
-        approx_stat_point = approximate_stationary_point(net=net_std, criterion=criterion, data=f.get_parameter(),
-                                                         num_it=num_approx_stat_points, lr=lr_approx_stat_points)
+        approx_stat_point = approximate_stationary_point(net=net_std,
+                                                         starting_point=cur_iterates_std[-1].clone(),
+                                                         criterion=criterion,
+                                                         data=f.get_parameter(),
+                                                         num_it=num_approx_stat_points,
+                                                         lr=lr_approx_stat_points)
         cur_dist_std = compute_sq_dist_to_point(iterates=iterates_std[i], point=approx_stat_point)
 
         # Append losses to lists
