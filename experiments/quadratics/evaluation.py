@@ -273,4 +273,4 @@ def evaluate_quad(loading_path: str) -> None:
     with open(loading_path + 'parameters_problem', 'wb') as f:
         pickle.dump(parameters_problem['test'], f)
 
-    print("End evaluation.")
+    print("Finished evaluation.")
