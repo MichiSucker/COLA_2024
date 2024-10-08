@@ -201,23 +201,13 @@ def compute_data(test_functions: list, num_iter: int, learned_algo: Optimization
         learned_algo.reset_state()
         learned_algo.set_loss_function(f)
 
-        # Compute iterates and corresponding losses/gradient-norms of learned algorithm.
-        cur_iterates, cur_losses_pac = compute_iterates(algo=learned_algo, num_iterates=num_iter, dim=dim)
-        iterates_pac[i, :, :] = cur_iterates
-
-        # Approximate stationary points for learned algorithm by running gradient descent with small step-size for a
-        # large number of steps. Here, make sure that the network is set correctly, that is, set it to the last
-        # predicted iterate of the learned algorithm. Finally, compute the (squared) distance of the iterates to this
-        # approximate stationary point.
-        approx_stat_point = approximate_stationary_point(net=net_std,
-                                                         starting_point=learned_algo.current_state[-1].clone(),
-                                                         criterion=criterion,
-                                                         data=f.get_parameter(),
-                                                         num_it=num_approx_stat_points,
-                                                         lr=lr_approx_stat_points)
-        cur_dist_pac = compute_sq_dist_to_point(iterates=iterates_pac[i], point=approx_stat_point)
+        # Compute iterates, losses, and distances for the learned algorithm
+        cur_iterates, cur_losses_pac, cur_dist_pac = compute_iter_loss_dist_learned_algo(
+            learned_algo=learned_algo, num_iter=num_iter, net_std=net_std, criterion=criterion,
+            num_approx_stat_points=num_approx_stat_points, lr_approx_stat_points=lr_approx_stat_points)
 
         # Append results
+        iterates_pac[i, :, :] = cur_iterates
         losses_pac.append(cur_losses_pac)
         dist_pac.append(cur_dist_pac)
 
