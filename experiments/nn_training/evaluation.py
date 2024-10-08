@@ -231,7 +231,6 @@ def evaluate_nn(loading_path: str) -> None:
     # Load data
     n_train = np.load(loading_path + 'n_train.npy')
     n_test = 2 * n_train
-    num_approx_stat_points, lr_approx_stat_points = int(2e3), 1e-6
     conv_stat_points_property, suff_descent_property = get_property_conv_to_stationary_points(n_max=n_train)
 
     # Specify degree of polynomial features
