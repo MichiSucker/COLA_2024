@@ -62,6 +62,10 @@ def compute_iterates(algo: OptimizationAlgorithm, num_iterates: int, dim: int) -
     return iterates, losses, grad_norms
 
 
+def compute_sq_dist_to_point(iterates, point):
+    return [torch.linalg.norm(torch.tensor(iterates[j]) - point).item() ** 2 for j in range(len(iterates))]
+
+
 def approximate_stationary_point(net: nn.Module, criterion: Callable, data: dict,
                                  num_it: int = int(1e4), lr: float = 1e-6) -> torch.Tensor:
     """Approximate stationary point by running gradient descent with a small step-size for a large number of iterations.
