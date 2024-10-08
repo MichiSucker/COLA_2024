@@ -42,7 +42,7 @@ def estimate_suff_desc_prob(test_functions: list,
     return np.array(suff_desc_prob).flatten()
 
 
-def compute_iterates(algo: OptimizationAlgorithm, num_iterates: int, dim: int) -> Tuple[NDArray, list, list]:
+def compute_iterates(algo: OptimizationAlgorithm, num_iterates: int, dim: int) -> Tuple[NDArray, list]:
     """Compute a given number of iterates with the algorithm and the corresponding losses and gradient-norms.
 
     :param algo: the optimization algorithm as OptimizationAlgorithm-object.
@@ -50,16 +50,14 @@ def compute_iterates(algo: OptimizationAlgorithm, num_iterates: int, dim: int) -
     :param dim: dimension of optimization variable
     :return: \1) the iterates
              2) the corresponding loss
-             3) the corresponding gradient-norms
     """
     iterates = np.empty((num_iterates+1, dim))
-    losses, grad_norms = [], []
+    losses = []
     for j in range(num_iterates + 1):
         iterates[j, :] = algo.current_iterate.detach().numpy()
         losses.append(algo.eval_loss().item())
-        grad_norms.append(torch.linalg.norm(algo.eval_grad()).item())
         algo.step()
-    return iterates, losses, grad_norms
+    return iterates, losses
 
 
 def compute_sq_dist_to_point(iterates, point):
@@ -127,7 +125,7 @@ def setup_nn(degree: int) -> Tuple[NetStdTraining, Net, int, list]:
 
 def compute_data(test_functions: list, num_iter: int, learned_algo: OptimizationAlgorithm,
                  net_std: NetStdTraining, criterion: Callable, lr_adam: float, dim: int
-                 ) -> Tuple[NDArray, NDArray, NDArray, NDArray, NDArray, NDArray, NDArray, NDArray]:
+                 ) -> Tuple[NDArray, NDArray, NDArray, NDArray, NDArray, NDArray]:
     """Compute the iterates, the losses, the distances to the stationary points and the gradients corresponding to the
     learned algorithm and adam on the test functions.
 
@@ -144,8 +142,6 @@ def compute_data(test_functions: list, num_iter: int, learned_algo: Optimization
              4) losses of adam
              5) distances to stationary points for the learned algorithm
              6) distances to stationary points for Adam
-             7) gradients of the learned algorithm
-             8) gradients of Adam
     """
 
     # Fix number of iterations and learning rate for the approximation of stationary points with gradient descent
@@ -155,7 +151,6 @@ def compute_data(test_functions: list, num_iter: int, learned_algo: Optimization
     iterates_pac = np.empty((len(test_functions), num_iter + 1, dim))
     iterates_std = np.empty((len(test_functions), num_iter + 1, dim))
     losses_pac, losses_std = [], []
-    gradients_pac, gradients_std = [], []
     dist_pac, dist_std = [], []
 
     pbar = tqdm(enumerate(test_functions))
@@ -166,7 +161,7 @@ def compute_data(test_functions: list, num_iter: int, learned_algo: Optimization
         learned_algo.set_loss_function(f)
 
         # Compute iterates and corresponding losses/gradient-norms of learned algorithm.
-        cur_iterates, cur_losses_pac, cur_grad_pac = compute_iterates(algo=learned_algo, num_iterates=num_iter, dim=dim)
+        cur_iterates, cur_losses_pac = compute_iterates(algo=learned_algo, num_iterates=num_iter, dim=dim)
         iterates_pac[i, :, :] = cur_iterates
 
         # Approximate stationary points for learned algorithm by running gradient descent with small step-size for a
@@ -183,17 +178,15 @@ def compute_data(test_functions: list, num_iter: int, learned_algo: Optimization
 
         # Append results
         losses_pac.append(cur_losses_pac)
-        gradients_pac.append(cur_grad_pac)
         dist_pac.append(cur_dist_pac)
 
         # Basically, perform the same for standard algorithm, that is, Adam.
-        # Reset the neural network that is trained with Adam to the initial state.
+        # For this, reset the neural network that is trained with Adam to the initial state.
         tensor_to_nn(learned_algo.initial_state[-1].clone(), template=net_std)
 
         # Compute iterates, losses, and gradient-norms of Adam.
         net_std, cur_losses_std, cur_iterates_std = train_model(net=net_std, data=f.get_parameter(),
                                                                 criterion=criterion, n_it=num_iter, lr=lr_adam)
-        cur_grad_std = [torch.linalg.norm(f.grad(x)).item() for x in cur_iterates_std]
         iterates_std[i, :, :] = torch.stack(cur_iterates_std)
 
         # Again, approximate stationary points for Adam. Here, make sure that the network is set correctly, that is, as
@@ -207,17 +200,14 @@ def compute_data(test_functions: list, num_iter: int, learned_algo: Optimization
         # Append losses to lists
         losses_std.append(cur_losses_std)
         dist_std.append(cur_dist_std)
-        gradients_std.append(cur_grad_std)
 
     # Transform everything to numpy-arrays
     losses_pac = np.array(losses_pac).reshape((len(test_functions), num_iter + 1))
     losses_std = np.array(losses_std).reshape((len(test_functions), num_iter + 1))
     dist_pac = np.array(dist_pac).reshape((len(test_functions), num_iter + 1))
     dist_std = np.array(dist_std).reshape((len(test_functions), num_iter + 1))
-    gradients_pac = np.array(gradients_pac).reshape((len(test_functions), num_iter + 1))
-    gradients_std = np.array(gradients_std).reshape((len(test_functions), num_iter + 1))
 
-    return iterates_pac, iterates_std, losses_pac, losses_std, dist_pac, dist_std, gradients_pac, gradients_std
+    return iterates_pac, iterates_std, losses_pac, losses_std, dist_pac, dist_std
 
 
 def evaluate_nn(loading_path: str) -> None:
@@ -268,7 +258,7 @@ def evaluate_nn(loading_path: str) -> None:
     learned_algo.implementation.load_state_dict(torch.load(loading_path + 'model.pt', weights_only=True))
 
     # Compute iterates, losses, gradients, distance to (approximate) stationary points, etc.
-    iterates_pac, iterates_std, losses_pac, losses_std, dist_pac, dist_std, gradients_pac, gradients_std = compute_data(
+    iterates_pac, iterates_std, losses_pac, losses_std, dist_pac, dist_std = compute_data(
         test_functions=test_functions, num_iter=n_test, learned_algo=learned_algo, net_std=net_std,
         criterion=criterion, lr_adam=lr_adam, dim=dim)
 
@@ -284,8 +274,6 @@ def evaluate_nn(loading_path: str) -> None:
     np.save(loading_path + 'losses_std', losses_std)
     np.save(loading_path + 'iterates_pac', iterates_pac)
     np.save(loading_path + 'iterates_std', iterates_std)
-    np.save(loading_path + 'gradients_pac', gradients_pac)
-    np.save(loading_path + 'gradients_std', gradients_std)
     np.save(loading_path + 'dist_pac', dist_pac)
     np.save(loading_path + 'dist_std', dist_std)
     np.save(loading_path + 'suff_desc_prob', suff_desc_prob)
