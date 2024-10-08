@@ -144,11 +144,11 @@ def evaluate_nn(loading_path: str) -> None:
 
     # Set up the neural networks for training with Adam and the learned algorithm, and parameters needed to change
     # between them.
-    net, neural_net, dim, shape_parameters = setup_nn(degree=degree)
+    net_std, net_learned, dim, shape_parameters = setup_nn(degree=degree)
 
     # Get test functions (from same distribution as for training) and transform them into
     # ParametricLossFunction-objects, which can be used for training the optimization algorithm.
-    loss_func, criterion, parameters = get_data(neural_network=neural_net,
+    loss_func, criterion, parameters = get_data(neural_network=net_learned,
                                                 n_prior=0, n_train=0, n_test=2500, n_val=0,
                                                 n_obs_problem=50, deg_poly=degree, noise_level=1)
     loss_functions = {
@@ -202,8 +202,8 @@ def evaluate_nn(loading_path: str) -> None:
         # large number of steps. Here, make sure that the network is set correctly, that is, set it to the last
         # predicted iterate of the learned algorithm. Finally, compute the (squared) distance of the iterates to this
         # approximate stationary point.
-        tensor_to_nn(opt_algo.current_state[-1].clone(), template=net)
-        approx_stat_point = approximate_stationary_point(net=net,
+        tensor_to_nn(opt_algo.current_state[-1].clone(), template=net_std)
+        approx_stat_point = approximate_stationary_point(net=net_std,
                                                          criterion=criterion,
                                                          data=f.get_parameter(),
                                                          num_it=num_approx_stat_points,
@@ -217,19 +217,19 @@ def evaluate_nn(loading_path: str) -> None:
 
         # Basically, perform the same for standard algorithm, that is, Adam.
         # Reset the neural network that is trained with Adam to the initial state.
-        tensor_to_nn(opt_algo.initial_state[-1].clone(), template=net)
+        tensor_to_nn(opt_algo.initial_state[-1].clone(), template=net_std)
 
         # Compute iterates, losses, and gradient-norms of Adam.
-        net, cur_losses_std, cur_iterates_std = train_model(net=net, data=f.get_parameter(), criterion=criterion,
-                                                            n_it=n_test, lr=lr_adam)
+        net_std, cur_losses_std, cur_iterates_std = train_model(net=net_std, data=f.get_parameter(), criterion=criterion,
+                                                                n_it=n_test, lr=lr_adam)
         cur_grad_std = [torch.linalg.norm(f.grad(x)).item() for x in cur_iterates_std]
         iterates_std[i, :, :] = torch.stack(cur_iterates_std)
 
         # Again, approximate stationary points for Adam. Here, make sure that the network is set correctly, that is, as
         # the last iterate predicted by Adam. Finally, compute the (squared) distance of the iterates to this
         # approximate stationary point.
-        tensor_to_nn(cur_iterates_std[-1].clone(), template=net)
-        approx_stat_point = approximate_stationary_point(net=net, criterion=criterion, data=f.get_parameter(),
+        tensor_to_nn(cur_iterates_std[-1].clone(), template=net_std)
+        approx_stat_point = approximate_stationary_point(net=net_std, criterion=criterion, data=f.get_parameter(),
                                                          num_it=num_approx_stat_points, lr=lr_approx_stat_points)
         cur_dist_std = compute_sq_dist_to_point(iterates=iterates_std[i], point=approx_stat_point)
 
