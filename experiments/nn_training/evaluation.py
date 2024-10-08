@@ -95,6 +95,10 @@ def approximate_stationary_point(net: nn.Module, criterion: Callable, data: dict
 
 
 def evaluate_nn(loading_path: str) -> None:
+    """Evaluate the trained model on a new test-set (from the same distribution).
+
+    :param loading_path: path where the trained model (and the other data) is stored in
+    """
 
     print("Starting evaluation.")
 
