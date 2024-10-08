@@ -94,6 +94,37 @@ def approximate_stationary_point(net: nn.Module, criterion: Callable, data: dict
     return nn_to_tensor(net)
 
 
+def setup_nn(degree: int) -> Tuple[NetStdTraining, Net, int, list]:
+    """Set up the neural networks for training with Adam and for training with the learned algorithm.
+
+    Create the same network twice, one time as a 'standard' PyTorch neural network, where parameters of the layers are
+    leaf-variables in the computational graph, and one time as a standard Pytorch function (!), in which we can insert
+    the prediction of the learned algorithm as parameters. Additionally, calculates the dimension of the resulting
+    optimization variable, as well as the list of (the sizes of the) trainable parameters, which is needed to switch
+    between the two implementations.
+
+    :param degree: specifies the degree of polynomial features used in the neural network (see neural_network.py for
+    more details)
+    :return: \1) neural network as NetStdTraining-object
+             2) neural network as Net-object
+             3) dimension of the optimization variable (the weights of the neural network)
+             4) list of the sizes of all trainable parameters
+    """
+    # Setup standard neural network (where parameters of the layers are leaf-variables in the computational graph).
+    # This is used for
+    #   - an easy understanding of the architecture
+    #   - benchmark (Adam is used as standard optimization algorithm here)
+    net = NetStdTraining(degree=degree)
+
+    # Setup the same neural network with standard tensors (i.e. the neural network is a standard PyTorch-function),
+    # such that the optimization algorithm can be trained on it.
+    shape_parameters = [p.size() for p in net.parameters()]
+    dim = sum([torch.prod(torch.tensor(s)).item() for s in shape_parameters])
+    neural_net = Net(degree=degree, shape_parameters=shape_parameters)
+
+    return net, neural_net, dim, shape_parameters
+
+
 def evaluate_nn(loading_path: str) -> None:
     """Evaluate the trained model on a new test-set (from the same distribution).
 
@@ -111,7 +142,7 @@ def evaluate_nn(loading_path: str) -> None:
     # Specify degree of polynomial features
     degree = 5
 
-    # Setup standard neural network (where parameters of the layers a leaf-variables in the computational graph).
+    # Setup standard neural network (where parameters of the layers are leaf-variables in the computational graph).
     # This is used for
     #   - an easy understanding of the architecture
     #   - benchmark (Adam is used as standard optimization algorithm here)
