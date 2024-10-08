@@ -116,7 +116,8 @@ def init_std_algo(x_0: torch.Tensor, stop_crit: StoppingCriterion, test_function
     return std_algo
 
 
-def init_learned_algo(loading_path, x_0, stop_crit, test_functions, n_train) -> OptimizationAlgorithm:
+def init_learned_algo(loading_path: str, x_0: torch.Tensor, stop_crit: StoppingCriterion, test_functions: list,
+                      n_train: int, dim: int) -> OptimizationAlgorithm:
     """Instantiate the learned algorithm and load the trained hyperparameters.
 
     :param loading_path: path to the trained model (with name 'model.pt'
@@ -124,6 +125,7 @@ def init_learned_algo(loading_path, x_0, stop_crit, test_functions, n_train) -> 
     :param stop_crit: stopping criterion
     :param test_functions: test functions, that is, the test data set
     :param n_train: number of iterations during training (of learned algorithm)
+    :param dim: dimension of optimization variable
     :return: the trained optimization algorithm
     """
     learned_algo = OptimizationAlgorithm(initial_state=x_0, implementation=LearnedAlgorithm(dim=dim),
