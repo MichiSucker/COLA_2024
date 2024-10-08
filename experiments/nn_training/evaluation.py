@@ -70,17 +70,22 @@ def compute_sq_dist_to_point(iterates, point):
     return [torch.linalg.norm(torch.tensor(iterates[j]) - point).item() ** 2 for j in range(len(iterates))]
 
 
-def approximate_stationary_point(net: nn.Module, criterion: Callable, data: dict,
-                                 num_it: int = int(1e4), lr: float = 1e-6) -> torch.Tensor:
+def approximate_stationary_point(net: nn.Module, starting_point: torch.Tensor, criterion: Callable,
+                                 data: dict, num_it: int = int(1e4), lr: float = 1e-6) -> torch.Tensor:
     """Approximate stationary point by running gradient descent with a small step-size for a large number of iterations.
 
     :param net: network to be trained
+    :param starting_point: point from which we start approximating the 'next' stationary point
     :param criterion: loss-function of the network
     :param data: dictionary containing the data set
     :param num_it: number of iterations for gradient descent
     :param lr: learning rate of gradient descent
     :return: approximation to stationary point (last iterate of gradient descent)
     """
+
+    # Load starting point into neural net
+    tensor_to_nn(starting_point, template=net)
+
     optimizer = torch.optim.SGD(net.parameters(), lr=lr)
     pbar = tqdm(range(num_it))
     pbar.set_description('Approximating stationary point')
@@ -156,6 +161,7 @@ def compute_data(test_functions: list, num_iter: int, learned_algo: Optimization
     pbar = tqdm(enumerate(test_functions))
     pbar.set_description("Compute iterates")
     for i, f in pbar:
+
         # Reset state of the algorithm and set the new loss-function.
         learned_algo.reset_state()
         learned_algo.set_loss_function(f)
