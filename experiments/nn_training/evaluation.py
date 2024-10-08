@@ -142,19 +142,9 @@ def evaluate_nn(loading_path: str) -> None:
     # Specify degree of polynomial features
     degree = 5
 
-    # Setup standard neural network (where parameters of the layers are leaf-variables in the computational graph).
-    # This is used for
-    #   - an easy understanding of the architecture
-    #   - benchmark (Adam is used as standard optimization algorithm here)
-    net = NetStdTraining(degree=degree)
-
-    # Setup the same neural network with standard tensors (i.e. the neural network is a standard PyTorch-function),
-    # such that the optimization algorithm can be trained on it.
-    shape_parameters = [p.size() for p in net.parameters()]
-    dim = sum([torch.prod(torch.tensor(s)).item() for s in shape_parameters])
-    neural_net = Net(degree=degree, shape_parameters=shape_parameters)
-
-
+    # Set up the neural networks for training with Adam and the learned algorithm, and parameters needed to change
+    # between them.
+    net, neural_net, dim, shape_parameters = setup_nn(degree=degree)
 
     # Get test functions (from same distribution as for training) and transform them into
     # ParametricLossFunction-objects, which can be used for training the optimization algorithm.
