@@ -60,7 +60,7 @@ def compute_iterates(algo: OptimizationAlgorithm, num_iterates: int, dim: int) -
     return iterates, losses
 
 
-def compute_sq_dist_to_point(iterates, point):
+def compute_sq_dist_to_point(iterates: torch.Tensor, point: torch.Tensor) -> list:
     """Compute the squared Euclidean norm between the iterates and the point.
 
     :param iterates: array of iterates of shape (n_iterates, dim)
