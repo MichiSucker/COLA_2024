@@ -164,6 +164,41 @@ def compute_iter_loss_dist_learned_algo(learned_algo: OptimizationAlgorithm,
     return cur_iterates, cur_losses_pac, cur_dist_pac
 
 
+def compute_iter_loss_dist_std_algo(net_std: NetStdTraining, data: dict, criterion: Callable,
+                                    num_iter: int, lr: float, num_approx_stat_points: int,
+                                    lr_approx_stat_points: float) -> Tuple[list, list, list]:
+    """Compute iterates, losses, and distance to 'next' stationary point for Adam.
+
+    :param net_std: template of the neural network as NetStdTraining-object
+    :param data: data set for training the neural network (parameter of the loss-function of the optimization algorithm)
+    :param criterion: loss-function of the neural network
+    :param num_iter: number of iterations to perform
+    :param lr: learning rate of Adam
+    :param num_approx_stat_points: number of iterations to approximate the stationary point
+    :param lr_approx_stat_points: learning rate for approximating the stationary point
+    :return: \1) The iterates
+             2) the corresponding losses
+             3) the corresponding distance to the (approx.) stationary point
+    """
+
+    # Compute iterates, losses, and gradient-norms of Adam.
+    net_std, cur_losses_std, cur_iterates_std = train_model(net=net_std, data=data,
+                                                            criterion=criterion, n_it=num_iter, lr=lr)
+
+    # Again, approximate stationary points for Adam. Here, make sure that the network is set correctly, that is, as
+    # the last iterate predicted by Adam. Finally, compute the (squared) distance of the iterates to this
+    # approximate stationary point.
+    approx_stat_point = approximate_stationary_point(net=net_std,
+                                                     starting_point=cur_iterates_std[-1].clone(),
+                                                     criterion=criterion,
+                                                     data=data,
+                                                     num_it=num_approx_stat_points,
+                                                     lr=lr_approx_stat_points)
+    cur_dist_std = compute_sq_dist_to_point(iterates=cur_iterates_std, point=approx_stat_point)
+
+    return cur_iterates_std, cur_losses_std, cur_dist_std
+
+
 def compute_data(test_functions: list, num_iter: int, learned_algo: OptimizationAlgorithm,
                  net_std: NetStdTraining, criterion: Callable, lr_adam: float, dim: int
                  ) -> Tuple[NDArray, NDArray, NDArray, NDArray, NDArray, NDArray]:
@@ -205,7 +240,7 @@ def compute_data(test_functions: list, num_iter: int, learned_algo: Optimization
         # Compute iterates, losses, and distances for the learned algorithm
         cur_iterates, cur_losses_pac, cur_dist_pac = compute_iter_loss_dist_learned_algo(
             learned_algo=learned_algo, num_iter=num_iter, net_std=net_std, criterion=criterion,
-            num_approx_stat_points=num_approx_stat_points, lr_approx_stat_points=lr_approx_stat_points)
+            num_approx_stat_points=num_approx_stat_points, lr_approx_stat_points=lr_approx_stat_points, dim=dim)
 
         # Append results
         iterates_pac[i, :, :] = cur_iterates
@@ -215,24 +250,12 @@ def compute_data(test_functions: list, num_iter: int, learned_algo: Optimization
         # Basically, perform the same for standard algorithm, that is, Adam.
         # For this, reset the neural network that is trained with Adam to the initial state.
         tensor_to_nn(learned_algo.initial_state[-1].clone(), template=net_std)
-
-        # Compute iterates, losses, and gradient-norms of Adam.
-        net_std, cur_losses_std, cur_iterates_std = train_model(net=net_std, data=f.get_parameter(),
-                                                                criterion=criterion, n_it=num_iter, lr=lr_adam)
-        iterates_std[i, :, :] = torch.stack(cur_iterates_std)
-
-        # Again, approximate stationary points for Adam. Here, make sure that the network is set correctly, that is, as
-        # the last iterate predicted by Adam. Finally, compute the (squared) distance of the iterates to this
-        # approximate stationary point.
-        approx_stat_point = approximate_stationary_point(net=net_std,
-                                                         starting_point=cur_iterates_std[-1].clone(),
-                                                         criterion=criterion,
-                                                         data=f.get_parameter(),
-                                                         num_it=num_approx_stat_points,
-                                                         lr=lr_approx_stat_points)
-        cur_dist_std = compute_sq_dist_to_point(iterates=iterates_std[i], point=approx_stat_point)
+        cur_iterates_std, cur_losses_std, cur_dist_std = compute_iter_loss_dist_std_algo(
+            net_std=net_std, data=f.get_parameter(), criterion=criterion, num_iter=num_iter, lr=lr_adam,
+            num_approx_stat_points=num_approx_stat_points, lr_approx_stat_points=lr_approx_stat_points)
 
         # Append losses to lists
+        iterates_std[i, :, :] = torch.stack(cur_iterates_std)
         losses_std.append(cur_losses_std)
         dist_std.append(cur_dist_std)
 
