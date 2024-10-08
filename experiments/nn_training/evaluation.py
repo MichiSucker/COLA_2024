@@ -182,8 +182,8 @@ def compute_iter_loss_dist_std_algo(net_std: NetStdTraining, data: dict, criteri
     """
 
     # Compute iterates, losses, and gradient-norms of Adam.
-    net_std, cur_losses_std, cur_iterates_std = train_model(net=net_std, data=data,
-                                                            criterion=criterion, n_it=num_iter, lr=lr)
+    net_std, cur_losses_std, cur_iterates_std = train_model(net=net_std, data=data, criterion=criterion,
+                                                            n_it=num_iter, lr=lr)
 
     # Again, approximate stationary points for Adam. Here, make sure that the network is set correctly, that is, as
     # the last iterate predicted by Adam. Finally, compute the (squared) distance of the iterates to this
@@ -194,7 +194,7 @@ def compute_iter_loss_dist_std_algo(net_std: NetStdTraining, data: dict, criteri
                                                      data=data,
                                                      num_it=num_approx_stat_points,
                                                      lr=lr_approx_stat_points)
-    cur_dist_std = compute_sq_dist_to_point(iterates=cur_iterates_std, point=approx_stat_point)
+    cur_dist_std = compute_sq_dist_to_point(iterates=np.array(cur_iterates_std), point=approx_stat_point)
 
     return cur_iterates_std, cur_losses_std, cur_dist_std
 
