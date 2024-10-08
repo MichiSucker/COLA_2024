@@ -147,7 +147,7 @@ def compute_sq_dist(iterates: NDArray, solutions: NDArray) -> NDArray:
 
 
 def compute_data(opt_algo: OptimizationAlgorithm, std_algo: OptimizationAlgorithm, test_functions: list,
-                 n_test: int, stopping_loss: float) -> Tuple[NDArray, NDArray, NDArray, NDArray, NDArray, NDArray]:
+                 n_test: int, stopping_loss: float, dim: int) -> Tuple[NDArray, NDArray, NDArray, NDArray, NDArray, NDArray]:
     """Compute iterates, losses, and distance to minimizer for the two algorithms.
 
     :param opt_algo: the learned optimization algorithm
@@ -155,6 +155,7 @@ def compute_data(opt_algo: OptimizationAlgorithm, std_algo: OptimizationAlgorith
     :param test_functions: the loss-functions for testing
     :param n_test: number of iterations on each test problem
     :param stopping_loss: loss at which the algorithm gets stopped (for numerical stability)
+    :param dim: dimension of optimization variable
     :return: \1) the iterates of the learned algorithm
              2) the iterates of the baseline algorithm
              3) the losses of the learned algorithm
@@ -244,7 +245,8 @@ def evaluate_quad(loading_path: str) -> None:
 
     # Do the actual evaluation
     iterates_pac, iterates_std, losses_pac, losses_std, dist_pac, dist_std = compute_data(
-        opt_algo=opt_algo, std_algo=std_algo, test_functions=test_functions, n_test=n_test, stopping_loss=stopping_loss)
+        opt_algo=opt_algo, std_algo=std_algo, test_functions=test_functions, n_test=n_test,
+        stopping_loss=stopping_loss, dim=dim)
 
     # Estimate convergence probability on several test sets
     suff_desc_prob, emp_conv_prob = estimate_conv_prob(test_functions=test_functions,
