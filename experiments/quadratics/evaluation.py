@@ -133,6 +133,13 @@ def init_learned_algo(loading_path, x_0, stop_crit, test_functions, n_train) -> 
     return learned_algo
 
 
+def compute_sq_dist(iterates, solutions):
+    num_test_problems = iterates.shape[0]
+    num_iterates = iterates.shape[1]
+    return np.array([[np.linalg.norm(iterates[i, j, :] - solutions[i]) ** 2
+                      for j in range(num_iterates)] for i in range(len(num_test_problems))])
+
+
 def compute_data(opt_algo: OptimizationAlgorithm, std_algo: OptimizationAlgorithm, test_functions: list,
                  n_test: int, stopping_loss: float) -> Tuple[NDArray, NDArray, NDArray, NDArray, NDArray, NDArray]:
     """Compute iterates, losses, and distance to minimizer for the two algorithms.
@@ -186,10 +193,8 @@ def compute_data(opt_algo: OptimizationAlgorithm, std_algo: OptimizationAlgorith
     losses_std = np.array(losses_std).reshape((len(test_functions), n_test + 1))
 
     # Compute distance to minimizer
-    dist_pac = np.array([[np.linalg.norm(iterates_pac[i, j, :] - solutions[i]) ** 2
-                          for j in range(n_test + 1)] for i in range(len(test_functions))])
-    dist_std = np.array([[np.linalg.norm(iterates_std[i, j, :] - solutions[i]) ** 2
-                          for j in range(n_test + 1)] for i in range(len(test_functions))])
+    dist_pac = compute_sq_dist(iterates=iterates_pac, solutions=solutions)
+    dist_std = compute_sq_dist(iterates=iterates_std, solutions=solutions)
 
     return iterates_pac, iterates_std, losses_pac, losses_std, dist_pac, dist_std
 
