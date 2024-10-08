@@ -357,4 +357,4 @@ def evaluate_nn(loading_path: str) -> None:
     with open(loading_path + 'parameters_problem', 'wb') as file:
         pickle.dump(parameters['test'], file)
 
-    print("End evaluation.")
+    print("Finished evaluation.")
