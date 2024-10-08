@@ -87,7 +87,7 @@ def approximate_stationary_point(net: nn.Module, starting_point: torch.Tensor, c
     tensor_to_nn(tensor=starting_point, template=net)
 
     optimizer = torch.optim.SGD(net.parameters(), lr=lr)
-    pbar = tqdm(range(num_it))
+    pbar = tqdm(range(num_it), position=0, leave=True)
     pbar.set_description('Approximating stationary point')
     for _ in pbar:
         optimizer.zero_grad()
