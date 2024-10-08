@@ -101,7 +101,7 @@ def init_std_algo(x_0: torch.Tensor, stop_crit: StoppingCriterion, test_function
     :param n_train: number of iterations during training (of learned algorithm)
     :param smoothness: smoothness constant of the loss-functions
     :param strong_conv: strong-convexity constant of the loss-functions
-    :return: OptimizationAlgorithm-object with heavy-ball algorithm as implemetation
+    :return: OptimizationAlgorithm-object with heavy-ball algorithm as implementation
     """
 
     # Setup worst-case optimal parameters for HBF
