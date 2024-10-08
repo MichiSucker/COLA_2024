@@ -241,6 +241,7 @@ def evaluate_nn(loading_path: str) -> None:
 
     # Get test functions (from same distribution as for training) and transform them into
     # ParametricLossFunction-objects, which can be used for training the optimization algorithm.
+    # Here, we set up 2500 test functions, from which we sample again later on (uniformly).
     loss_func, criterion, parameters = get_data(neural_network=net_learned,
                                                 n_prior=0, n_train=0, n_test=2500, n_val=0,
                                                 n_obs_problem=50, deg_poly=degree, noise_level=1)
