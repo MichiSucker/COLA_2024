@@ -40,11 +40,6 @@ def get_property_conv_to_stationary_points(n_max: int) -> Tuple[Callable, Callab
         # Compute the pair-wise differences
         difference = all_losses[1:] - all_losses[:-1]
 
-        # Some print-statements for inspection during run-time. Could be removed.
-        print(f"First Fail: {torch.argmax((difference >= 0).to(torch.int))}")
-        print(f"Failed at: {torch.where(difference >= 0)}")
-        print(torch.mean((difference < 0).to(torch.float)).item(), "\n")
-
         # The algorithm has the sufficient-descent property, if all pair-wise differences are strictly smaller than
         # zero.
         return torch.all(difference < 0).item()
