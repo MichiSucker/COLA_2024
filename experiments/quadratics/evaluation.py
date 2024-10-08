@@ -110,15 +110,27 @@ def init_std_algo(x_0: torch.Tensor, stop_crit: StoppingCriterion, test_function
             (torch.sqrt(smoothness) + torch.sqrt(strong_conv))) ** 2
 
     # Instantiate OptimizationAlgorithm-object with implementation of HBF
-    std_algo = OptimizationAlgorithm(
-        initial_state=x_0,
-        implementation=HBF(alpha=alpha, beta=beta),
-        stopping_criterion=stop_crit,
-        loss_function=test_functions[0],
-        n_max=n_train
-    )
+    std_algo = OptimizationAlgorithm(initial_state=x_0, implementation=HBF(alpha=alpha, beta=beta),
+                                     stopping_criterion=stop_crit, loss_function=test_functions[0], n_max=n_train)
 
     return std_algo
+
+
+def init_learned_algo(loading_path, x_0, stop_crit, test_functions, n_train) -> OptimizationAlgorithm:
+    """Instantiate the learned algorithm and load the trained hyperparameters.
+
+    :param loading_path: path to the trained model (with name 'model.pt'
+    :param x_0: starting point
+    :param stop_crit: stopping criterion
+    :param test_functions: test functions, that is, the test data set
+    :param n_train: number of iterations during training (of learned algorithm)
+    :return: the trained optimization algorithm
+    """
+    learned_algo = OptimizationAlgorithm(initial_state=x_0, implementation=LearnedAlgorithm(dim=dim),
+                                         stopping_criterion=stop_crit, loss_function=test_functions[0],
+                                         n_max=n_train)
+    learned_algo.implementation.load_state_dict(torch.load(loading_path + 'model.pt', weights_only=True))
+    return learned_algo
 
 
 def evaluate_quad(loading_path: str) -> None:
@@ -155,14 +167,8 @@ def evaluate_quad(loading_path: str) -> None:
                              smoothness=L_max, strong_conv=mu_min)
 
     # Initialize the learned algorithm and load the trained model
-    opt_algo = OptimizationAlgorithm(
-        initial_state=x_0,
-        implementation=LearnedAlgorithm(dim=dim),
-        stopping_criterion=stop_crit,
-        loss_function=test_functions[0],
-        n_max=n_train
-    )
-    opt_algo.implementation.load_state_dict(torch.load(loading_path + 'model.pt', weights_only=True))
+    opt_algo = init_learned_algo(loading_path=loading_path, x_0=x_0, stop_crit=stop_crit, test_functions=test_functions,
+                                 n_train=n_train)
 
     # Compute the solution for each problem by solving the linear system.
     solutions = np.array([np.linalg.solve(f.get_parameter()['A'], f.get_parameter()['b'])
