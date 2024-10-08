@@ -221,7 +221,7 @@ def compute_data(test_functions: list, num_iter: int, learned_algo: Optimization
     """
 
     # Fix number of iterations and learning rate for the approximation of stationary points with gradient descent
-    num_approx_stat_points, lr_approx_stat_points = int(2e3), 1e-6
+    num_approx_stat_points, lr_approx_stat_points = int(5e4), 1e-6
 
     # Instantiate empty containers to store everything in
     iterates_pac = np.empty((len(test_functions), num_iter + 1, dim))
