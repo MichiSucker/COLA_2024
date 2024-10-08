@@ -125,6 +125,82 @@ def setup_nn(degree: int) -> Tuple[NetStdTraining, Net, int, list]:
     return net_std, net_learned, dim, shape_parameters
 
 
+def compute_data(test_functions: list, num_iter: int, learned_algo: OptimizationAlgorithm,
+                 net_std: NetStdTraining, criterion: Callable, lr_adam: float, dim: int
+                 ) -> Tuple[NDArray, NDArray, NDArray, NDArray, NDArray, NDArray, NDArray, NDArray]:
+
+    # Fix number of iterations and learning rate for the approximation of stationary points with gradient descent
+    num_approx_stat_points, lr_approx_stat_points = int(2e3), 1e-6
+
+    # Instantiate empty containers to store everything in
+    iterates_pac = np.empty((len(test_functions), num_iter + 1, dim))
+    iterates_std = np.empty((len(test_functions), num_iter + 1, dim))
+    losses_pac, losses_std = [], []
+    gradients_pac, gradients_std = [], []
+    dist_pac, dist_std = [], []
+
+    pbar = tqdm(enumerate(test_functions))
+    pbar.set_description("Compute iterates")
+    for i, f in pbar:
+        # Reset state of the algorithm and set the new loss-function.
+        learned_algo.reset_state()
+        learned_algo.set_loss_function(f)
+
+        # Compute iterates and corresponding losses/gradient-norms of learned algorithm.
+        cur_iterates, cur_losses_pac, cur_grad_pac = compute_iterates(algo=learned_algo, num_iterates=num_iter, dim=dim)
+        iterates_pac[i, :, :] = cur_iterates
+
+        # Approximate stationary points for learned algorithm by running gradient descent with small step-size for a
+        # large number of steps. Here, make sure that the network is set correctly, that is, set it to the last
+        # predicted iterate of the learned algorithm. Finally, compute the (squared) distance of the iterates to this
+        # approximate stationary point.
+        tensor_to_nn(learned_algo.current_state[-1].clone(), template=net_std)
+        approx_stat_point = approximate_stationary_point(net=net_std,
+                                                         criterion=criterion,
+                                                         data=f.get_parameter(),
+                                                         num_it=num_approx_stat_points,
+                                                         lr=lr_approx_stat_points)
+        cur_dist_pac = compute_sq_dist_to_point(iterates=iterates_pac[i], point=approx_stat_point)
+
+        # Append results
+        losses_pac.append(cur_losses_pac)
+        gradients_pac.append(cur_grad_pac)
+        dist_pac.append(cur_dist_pac)
+
+        # Basically, perform the same for standard algorithm, that is, Adam.
+        # Reset the neural network that is trained with Adam to the initial state.
+        tensor_to_nn(learned_algo.initial_state[-1].clone(), template=net_std)
+
+        # Compute iterates, losses, and gradient-norms of Adam.
+        net_std, cur_losses_std, cur_iterates_std = train_model(net=net_std, data=f.get_parameter(),
+                                                                criterion=criterion, n_it=num_iter, lr=lr_adam)
+        cur_grad_std = [torch.linalg.norm(f.grad(x)).item() for x in cur_iterates_std]
+        iterates_std[i, :, :] = torch.stack(cur_iterates_std)
+
+        # Again, approximate stationary points for Adam. Here, make sure that the network is set correctly, that is, as
+        # the last iterate predicted by Adam. Finally, compute the (squared) distance of the iterates to this
+        # approximate stationary point.
+        tensor_to_nn(cur_iterates_std[-1].clone(), template=net_std)
+        approx_stat_point = approximate_stationary_point(net=net_std, criterion=criterion, data=f.get_parameter(),
+                                                         num_it=num_approx_stat_points, lr=lr_approx_stat_points)
+        cur_dist_std = compute_sq_dist_to_point(iterates=iterates_std[i], point=approx_stat_point)
+
+        # Append losses to lists
+        losses_std.append(cur_losses_std)
+        dist_std.append(cur_dist_std)
+        gradients_std.append(cur_grad_std)
+
+    # Transform everything to numpy-arrays
+    losses_pac = np.array(losses_pac).reshape((len(test_functions), num_iter + 1))
+    losses_std = np.array(losses_std).reshape((len(test_functions), num_iter + 1))
+    dist_pac = np.array(dist_pac).reshape((len(test_functions), num_iter + 1))
+    dist_std = np.array(dist_std).reshape((len(test_functions), num_iter + 1))
+    gradients_pac = np.array(gradients_pac).reshape((len(test_functions), num_iter + 1))
+    gradients_std = np.array(gradients_std).reshape((len(test_functions), num_iter + 1))
+
+    return iterates_pac, iterates_std, losses_pac, losses_std, dist_pac, dist_std, gradients_pac, gradients_std
+
+
 def evaluate_nn(loading_path: str) -> None:
     """Evaluate the trained model on a new test-set (from the same distribution).
 
@@ -159,7 +235,7 @@ def evaluate_nn(loading_path: str) -> None:
     # performance.
     torch.manual_seed(0)
     x_0 = torch.randn(2 * dim).reshape((2, -1))
-    lr_adam = 0.008     # This was found originally with grid-search.
+    lr_adam = 0.008     # This was found originally with grid-search. Do NOT change!
     print(f"Learning rate of Adam is set to {lr_adam}.")
 
     # Instantiate algorithm and load its weights.
@@ -173,72 +249,10 @@ def evaluate_nn(loading_path: str) -> None:
     )
     opt_algo.implementation.load_state_dict(torch.load(loading_path + 'model.pt', weights_only=True))
 
-    # Instantiate empty containers to store everything in
-    iterates_pac = np.empty((len(test_functions), n_test+1, dim))
-    iterates_std = np.empty((len(test_functions), n_test+1, dim))
-    losses_pac, losses_std = [], []
-    gradients_pac, gradients_std = [], []
-    dist_pac, dist_std = [], []
-
-    pbar = tqdm(enumerate(test_functions))
-    pbar.set_description("Compute iterates")
-    for i, f in pbar:
-
-        # Reset state of the algorithm and set the new loss-function.
-        opt_algo.reset_state()
-        opt_algo.set_loss_function(f)
-
-        # Compute iterates and corresponding losses/gradient-norms of learned algorithm.
-        cur_iterates, cur_losses_pac, cur_grad_pac = compute_iterates(algo=opt_algo, num_iterates=n_test, dim=dim)
-        iterates_pac[i, :, :] = cur_iterates
-
-        # Approximate stationary points for learned algorithm by running gradient descent with small step-size for a
-        # large number of steps. Here, make sure that the network is set correctly, that is, set it to the last
-        # predicted iterate of the learned algorithm. Finally, compute the (squared) distance of the iterates to this
-        # approximate stationary point.
-        tensor_to_nn(opt_algo.current_state[-1].clone(), template=net_std)
-        approx_stat_point = approximate_stationary_point(net=net_std,
-                                                         criterion=criterion,
-                                                         data=f.get_parameter(),
-                                                         num_it=num_approx_stat_points,
-                                                         lr=lr_approx_stat_points)
-        cur_dist_pac = compute_sq_dist_to_point(iterates=iterates_pac[i], point=approx_stat_point)
-
-        # Append results
-        losses_pac.append(cur_losses_pac)
-        gradients_pac.append(cur_grad_pac)
-        dist_pac.append(cur_dist_pac)
-
-        # Basically, perform the same for standard algorithm, that is, Adam.
-        # Reset the neural network that is trained with Adam to the initial state.
-        tensor_to_nn(opt_algo.initial_state[-1].clone(), template=net_std)
-
-        # Compute iterates, losses, and gradient-norms of Adam.
-        net_std, cur_losses_std, cur_iterates_std = train_model(net=net_std, data=f.get_parameter(),
-                                                                criterion=criterion, n_it=n_test, lr=lr_adam)
-        cur_grad_std = [torch.linalg.norm(f.grad(x)).item() for x in cur_iterates_std]
-        iterates_std[i, :, :] = torch.stack(cur_iterates_std)
-
-        # Again, approximate stationary points for Adam. Here, make sure that the network is set correctly, that is, as
-        # the last iterate predicted by Adam. Finally, compute the (squared) distance of the iterates to this
-        # approximate stationary point.
-        tensor_to_nn(cur_iterates_std[-1].clone(), template=net_std)
-        approx_stat_point = approximate_stationary_point(net=net_std, criterion=criterion, data=f.get_parameter(),
-                                                         num_it=num_approx_stat_points, lr=lr_approx_stat_points)
-        cur_dist_std = compute_sq_dist_to_point(iterates=iterates_std[i], point=approx_stat_point)
-
-        # Append losses to lists
-        losses_std.append(cur_losses_std)
-        dist_std.append(cur_dist_std)
-        gradients_std.append(cur_grad_std)
-
-    # Transform everything to numpy-arrays
-    losses_pac = np.array(losses_pac).reshape((len(test_functions), n_test + 1))
-    losses_std = np.array(losses_std).reshape((len(test_functions), n_test + 1))
-    dist_pac = np.array(dist_pac).reshape((len(test_functions), n_test + 1))
-    dist_std = np.array(dist_std).reshape((len(test_functions), n_test + 1))
-    gradients_pac = np.array(gradients_pac).reshape((len(test_functions), n_test + 1))
-    gradients_std = np.array(gradients_std).reshape((len(test_functions), n_test + 1))
+    # Compute iterates, losses, gradients, distance to (approximate) stationary points, etc.
+    iterates_pac, iterates_std, losses_pac, losses_std, dist_pac, dist_std, gradients_pac, gradients_std = compute_data(
+        test_functions=test_functions, num_iter=n_test, learned_algo=opt_algo, net_std=net_std,
+        criterion=criterion, lr_adam=lr_adam, dim=dim)
 
     # Estimate convergence probability on several test sets
     suff_desc_prob = estimate_suff_desc_prob(test_functions=test_functions, suff_descent_property=suff_descent_property,
