@@ -128,6 +128,41 @@ def setup_nn(degree: int) -> Tuple[NetStdTraining, Net, int, list]:
     return net_std, net_learned, dim, shape_parameters
 
 
+def compute_iter_loss_dist_learned_algo(learned_algo: OptimizationAlgorithm,
+                                        num_iter: int, net_std: NetStdTraining, criterion: Callable,
+                                        num_approx_stat_points: int, lr_approx_stat_points: float
+                                        ) -> Tuple[NDArray, list, list]:
+    """Compute iterates, losses, and distance to 'next' stationary point for the learned algorithm.
+
+    :param learned_algo: the learned algorithm as OptimizationAlgorithm-object
+    :param num_iter: number of iterations to perform
+    :param net_std: template of the neural network as NetStdTraining-object
+    :param criterion: loss-function of the neural network
+    :param num_approx_stat_points: number of iterations to approximate the stationary point
+    :param lr_approx_stat_points: learning rate for approximating the stationary point
+    :return: \1) The iterates
+             2) the corresponding losses
+             3) the corresponding distance to the (approx.) stationary point
+    """
+
+    # Compute iterates and corresponding losses/gradient-norms of learned algorithm.
+    cur_iterates, cur_losses_pac = compute_iterates(algo=learned_algo, num_iterates=num_iter, dim=dim)
+
+    # Approximate stationary points for learned algorithm by running gradient descent with small step-size for a
+    # large number of steps. Here, make sure that the network is set correctly, that is, set it to the last
+    # predicted iterate of the learned algorithm. Finally, compute the (squared) distance of the iterates to this
+    # approximate stationary point.
+    approx_stat_point = approximate_stationary_point(net=net_std,
+                                                     starting_point=learned_algo.current_state[-1].clone(),
+                                                     criterion=criterion,
+                                                     data=learned_algo.loss_function.get_parameter(),
+                                                     num_it=num_approx_stat_points,
+                                                     lr=lr_approx_stat_points)
+    cur_dist_pac = compute_sq_dist_to_point(iterates=cur_iterates, point=approx_stat_point)
+
+    return cur_iterates, cur_losses_pac, cur_dist_pac
+
+
 def compute_data(test_functions: list, num_iter: int, learned_algo: OptimizationAlgorithm,
                  net_std: NetStdTraining, criterion: Callable, lr_adam: float, dim: int
                  ) -> Tuple[NDArray, NDArray, NDArray, NDArray, NDArray, NDArray]:
