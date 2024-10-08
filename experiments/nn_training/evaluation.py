@@ -258,18 +258,18 @@ def evaluate_nn(loading_path: str) -> None:
 
     # Instantiate algorithm and load its weights.
     stop_crit = GradientCriterion(eps=1e-6)
-    opt_algo = OptimizationAlgorithm(
+    learned_algo = OptimizationAlgorithm(
         initial_state=x_0,
         implementation=LearnedAlgorithm(dim=dim),
         stopping_criterion=stop_crit,
         loss_function=test_functions[0],
         n_max=n_train
     )
-    opt_algo.implementation.load_state_dict(torch.load(loading_path + 'model.pt', weights_only=True))
+    learned_algo.implementation.load_state_dict(torch.load(loading_path + 'model.pt', weights_only=True))
 
     # Compute iterates, losses, gradients, distance to (approximate) stationary points, etc.
     iterates_pac, iterates_std, losses_pac, losses_std, dist_pac, dist_std, gradients_pac, gradients_std = compute_data(
-        test_functions=test_functions, num_iter=n_test, learned_algo=opt_algo, net_std=net_std,
+        test_functions=test_functions, num_iter=n_test, learned_algo=learned_algo, net_std=net_std,
         criterion=criterion, lr_adam=lr_adam, dim=dim)
 
     # Estimate convergence probability on several test sets
