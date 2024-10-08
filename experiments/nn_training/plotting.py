@@ -12,6 +12,8 @@ def create_plot(loading_path: str) -> None:
     :return: None
     """
 
+    print("Starting creating plot.")
+
     # Specify plotting parameters.
     # This plot will span both columns of AISTATS two-column format.
     width = 2 * 234.8775
@@ -133,3 +135,5 @@ def create_plot(loading_path: str) -> None:
     # Save plot into the folder, where the data was loaded from.
     plt.tight_layout()
     fig.savefig(loading_path + '/evaluation.pdf', dpi=300, bbox_inches='tight')
+
+    print("Finished creating plot.")
