@@ -16,4 +16,4 @@ def run_experiment_nn(path: str) -> None:
     # Create plot
     create_plot(loading_path=path)
 
-    print(f"End experiment 'Neural Network Training'.")
+    print(f"Finished experiment 'Neural Network Training'.")
