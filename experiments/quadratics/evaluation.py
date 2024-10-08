@@ -133,7 +133,13 @@ def init_learned_algo(loading_path, x_0, stop_crit, test_functions, n_train) -> 
     return learned_algo
 
 
-def compute_sq_dist(iterates, solutions):
+def compute_sq_dist(iterates: NDArray, solutions: NDArray) -> NDArray:
+    """Compute squared distance between the iterates and the solutions.
+
+    :param iterates: given sequence of iterates as (n x m x d)-array
+    :param solutions: points for which we want to compute the distance to as (n x d)-array
+    :return: the squared distance between the iterates and the solutions as (n, m)-array
+    """
     num_test_problems = iterates.shape[0]
     num_iterates = iterates.shape[1]
     return np.array([[np.linalg.norm(iterates[i, j, :] - solutions[i]) ** 2
