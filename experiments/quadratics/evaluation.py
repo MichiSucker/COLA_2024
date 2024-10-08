@@ -244,7 +244,7 @@ def evaluate_quad(loading_path: str) -> None:
 
     # Initialize the learned algorithm and load the trained model
     opt_algo = init_learned_algo(loading_path=loading_path, x_0=x_0, stop_crit=stop_crit, test_functions=test_functions,
-                                 n_train=n_train)
+                                 n_train=n_train, dim=dim)
 
     # Do the actual evaluation
     iterates_pac, iterates_std, losses_pac, losses_std, dist_pac, dist_std = compute_data(
