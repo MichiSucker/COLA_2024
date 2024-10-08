@@ -268,6 +268,35 @@ def compute_data(test_functions: list, num_iter: int, learned_algo: Optimization
     return iterates_pac, iterates_std, losses_pac, losses_std, dist_pac, dist_std
 
 
+def load_algorithm(loading_path: str, test_functions: list, n_train: int) -> OptimizationAlgorithm:
+    """Instantiate and load the learned algorithm.
+
+    :param loading_path: path to the trained model (with name 'model.pt'
+    :param test_functions: the test functions for evaluation
+    :param n_train: number of iterations the algorithm was trained on
+    :return: the trained optimization algorithm
+    """
+
+    # Set initial state.
+    # Note that the seed of 0 is important here: The learned algorithm only got trained from that specific
+    # initialization, such that it overfits to it. Starting from another point might yield to a degradation in
+    # performance. Thus: Do NOT change this!
+    torch.manual_seed(0)
+    x_0 = torch.randn(2 * dim).reshape((2, -1))
+
+    # Instantiate algorithm and load its weights.
+    stop_crit = GradientCriterion(eps=1e-6)
+    learned_algo = OptimizationAlgorithm(
+        initial_state=x_0,
+        implementation=LearnedAlgorithm(dim=dim),
+        stopping_criterion=stop_crit,
+        loss_function=test_functions[0],
+        n_max=n_train
+    )
+    learned_algo.implementation.load_state_dict(torch.load(loading_path + 'model.pt', weights_only=True))
+    return learned_algo
+
+
 def evaluate_nn(loading_path: str) -> None:
     """Evaluate the trained model on a new test-set (from the same distribution).
 
@@ -284,6 +313,11 @@ def evaluate_nn(loading_path: str) -> None:
     # Specify degree of polynomial features
     degree = 5
 
+    # Set step-size of Adam.
+    # This was found originally with grid-search. Do NOT change!
+    lr_adam = 0.008
+    print(f"Learning rate of Adam is set to {lr_adam}.")
+
     # Set up the neural networks for training with Adam and the learned algorithm, and parameters needed to change
     # between them.
     net_std, net_learned, dim, shape_parameters = setup_nn(degree=degree)
@@ -296,25 +330,8 @@ def evaluate_nn(loading_path: str) -> None:
                                                 n_obs_problem=50, deg_poly=degree, noise_level=1)
     test_functions = [ParametricLossFunction(func=loss_func, p=p) for p in parameters['test']]
 
-    # Set initial state.
-    # Note that the seed of 0 is important here: The learned algorithm only got trained from that specific
-    # initialization, such that it overfits to it. Starting from another point might yield to a degradation in
-    # performance.
-    torch.manual_seed(0)
-    x_0 = torch.randn(2 * dim).reshape((2, -1))
-    lr_adam = 0.008     # This was found originally with grid-search. Do NOT change!
-    print(f"Learning rate of Adam is set to {lr_adam}.")
-
     # Instantiate algorithm and load its weights.
-    stop_crit = GradientCriterion(eps=1e-6)
-    learned_algo = OptimizationAlgorithm(
-        initial_state=x_0,
-        implementation=LearnedAlgorithm(dim=dim),
-        stopping_criterion=stop_crit,
-        loss_function=test_functions[0],
-        n_max=n_train
-    )
-    learned_algo.implementation.load_state_dict(torch.load(loading_path + 'model.pt', weights_only=True))
+    learned_algo = load_algorithm(loading_path=loading_path, test_functions=test_functions, n_train=n_train)
 
     # Compute iterates, losses, gradients, distance to (approximate) stationary points, etc.
     iterates_pac, iterates_std, losses_pac, losses_std, dist_pac, dist_std = compute_data(
