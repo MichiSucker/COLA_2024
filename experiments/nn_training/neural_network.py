@@ -132,8 +132,7 @@ def train_model(net: nn.Module,
 
     # Initialize
     optimizer = torch.optim.Adam(net.parameters(), lr=lr)
-    iterates = []
-    losses = []
+    iterates, losses = [], []
 
     # Perform optimization (as usual)
     for i in range(n_it + 1):
