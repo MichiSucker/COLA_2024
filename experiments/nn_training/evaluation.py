@@ -220,8 +220,8 @@ def evaluate_nn(loading_path: str) -> None:
         tensor_to_nn(opt_algo.initial_state[-1].clone(), template=net_std)
 
         # Compute iterates, losses, and gradient-norms of Adam.
-        net_std, cur_losses_std, cur_iterates_std = train_model(net=net_std, data=f.get_parameter(), criterion=criterion,
-                                                                n_it=n_test, lr=lr_adam)
+        net_std, cur_losses_std, cur_iterates_std = train_model(net=net_std, data=f.get_parameter(),
+                                                                criterion=criterion, n_it=n_test, lr=lr_adam)
         cur_grad_std = [torch.linalg.norm(f.grad(x)).item() for x in cur_iterates_std]
         iterates_std[i, :, :] = torch.stack(cur_iterates_std)
 
