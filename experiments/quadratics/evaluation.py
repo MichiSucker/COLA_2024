@@ -133,7 +133,22 @@ def init_learned_algo(loading_path, x_0, stop_crit, test_functions, n_train) -> 
     return learned_algo
 
 
-def compute_data(opt_algo, std_algo, test_functions, n_test, stopping_loss):
+def compute_data(opt_algo: OptimizationAlgorithm, std_algo: OptimizationAlgorithm, test_functions: list,
+                 n_test: int, stopping_loss: float) -> Tuple[NDArray, NDArray, NDArray, NDArray, NDArray, NDArray]:
+    """Compute iterates, losses, and distance to minimizer for the two algorithms.
+
+    :param opt_algo: the learned optimization algorithm
+    :param std_algo: the baseline algorithm (here: HBF)
+    :param test_functions: the loss-functions for testing
+    :param n_test: number of iterations on each test problem
+    :param stopping_loss: loss at which the algorithm gets stopped (for numerical stability)
+    :return: \1) the iterates of the learned algorithm
+             2) the iterates of the baseline algorithm
+             3) the losses of the learned algorithm
+             4) the losses of the baseline algorithm
+             5) the distance to the solution for the learned algorithm
+             6) the distance to the solution for the baseline algorithm
+    """
 
     # Compute the solution for each problem by solving the linear system.
     solutions = np.array([np.linalg.solve(f.get_parameter()['A'], f.get_parameter()['b'])
