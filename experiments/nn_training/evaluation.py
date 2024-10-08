@@ -96,9 +96,9 @@ def approximate_stationary_point(net: nn.Module, criterion: Callable, data: dict
 
 def evaluate_nn(loading_path: str) -> None:
 
-    ############################################################
+    print("Starting evaluation.")
+
     # Load data
-    ############################################################
     n_train = np.load(loading_path + 'n_train.npy')
     n_test = 2 * n_train
     num_approx_stat_points, lr_approx_stat_points = int(2e3), 1e-6
@@ -238,3 +238,5 @@ def evaluate_nn(loading_path: str) -> None:
     np.save(loading_path + 'suff_desc_prob', suff_desc_prob)
     with open(loading_path + 'parameters_problem', 'wb') as file:
         pickle.dump(parameters['test'], file)
+
+    print("End evaluation.")
