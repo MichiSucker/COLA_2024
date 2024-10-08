@@ -151,13 +151,7 @@ def evaluate_nn(loading_path: str) -> None:
     loss_func, criterion, parameters = get_data(neural_network=net_learned,
                                                 n_prior=0, n_train=0, n_test=2500, n_val=0,
                                                 n_obs_problem=50, deg_poly=degree, noise_level=1)
-    loss_functions = {
-        'prior': [ParametricLossFunction(func=loss_func, p=p) for p in parameters['prior']],
-        'train': [ParametricLossFunction(func=loss_func, p=p) for p in parameters['train']],
-        'test': [ParametricLossFunction(func=loss_func, p=p) for p in parameters['test']],
-        'validation': [ParametricLossFunction(func=loss_func, p=p) for p in parameters['validation']],
-    }
-    test_functions = loss_functions['test']
+    test_functions = [ParametricLossFunction(func=loss_func, p=p) for p in parameters['test']]
 
     # Set initial state.
     # Note that the seed of 0 is important here: The learned algorithm only got trained from that specific
