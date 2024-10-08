@@ -147,7 +147,8 @@ def compute_sq_dist(iterates: NDArray, solutions: NDArray) -> NDArray:
 
 
 def compute_data(opt_algo: OptimizationAlgorithm, std_algo: OptimizationAlgorithm, test_functions: list,
-                 n_test: int, stopping_loss: float, dim: int) -> Tuple[NDArray, NDArray, NDArray, NDArray, NDArray, NDArray]:
+                 n_test: int, stopping_loss: float,
+                 dim: int) -> Tuple[NDArray, NDArray, NDArray, NDArray, NDArray, NDArray]:
     """Compute iterates, losses, and distance to minimizer for the two algorithms.
 
     :param opt_algo: the learned optimization algorithm
