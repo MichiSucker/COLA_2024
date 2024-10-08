@@ -109,13 +109,7 @@ def evaluate_quad(loading_path: str) -> None:
 
     # Create a new set of test-functions from the same distribution
     parameters_problem, loss_func, mu_min, L_max = get_data(dim=dim, n_prior=0, n_train=0, n_val=0, n_test=2500)
-    loss_functions = {
-        'prior': [ParametricLossFunction(func=loss_func, p=p) for p in parameters_problem['prior']],
-        'train': [ParametricLossFunction(func=loss_func, p=p) for p in parameters_problem['train']],
-        'test': [ParametricLossFunction(func=loss_func, p=p) for p in parameters_problem['test']],
-        'validation': [ParametricLossFunction(func=loss_func, p=p) for p in parameters_problem['validation']]
-    }
-    test_functions = loss_functions['test']
+    test_functions = [ParametricLossFunction(func=loss_func, p=p) for p in parameters_problem['test']]
 
     # Instantiate stopping criterion
     stop_crit = LossCriterion(eps=1e-20)
