@@ -4,6 +4,8 @@ from typing import Tuple, Callable
 import torch
 from tqdm import tqdm
 import pickle
+
+from classes.StoppingCriterion.class_StoppingCriterion import StoppingCriterion
 from properties_trajectory import get_property_conv_to_stationary_points
 from experiments.quadratics.data_generation import get_data
 from classes.OptimizationAlgorithm.class_OptimizationAlgorithm import OptimizationAlgorithm
@@ -89,6 +91,36 @@ def estimate_conv_prob(test_functions: list,
     return np.array(suff_desc_prob).flatten(), np.array(emp_conv_prob).flatten()
 
 
+def init_std_algo(x_0: torch.Tensor, stop_crit: StoppingCriterion, test_functions: list, n_train: int,
+                  smoothness: torch.Tensor, strong_conv: torch.Tensor):
+    """Instantiate the standard algorithm (here: HBF) with the correct parameters.
+
+    :param x_0: starting point
+    :param stop_crit: stopping criterion
+    :param test_functions: test functions, that is, the test data set
+    :param n_train: number of iterations during training (of learned algorithm)
+    :param smoothness: smoothness constant of the loss-functions
+    :param strong_conv: strong-convexity constant of the loss-functions
+    :return: OptimizationAlgorithm-object with heavy-ball algorithm as implemetation
+    """
+
+    # Setup worst-case optimal parameters for HBF
+    alpha = 4 / ((torch.sqrt(smoothness) + torch.sqrt(strong_conv)) ** 2)
+    beta = ((torch.sqrt(smoothness) - torch.sqrt(strong_conv)) /
+            (torch.sqrt(smoothness) + torch.sqrt(strong_conv))) ** 2
+
+    # Instantiate OptimizationAlgorithm-object with implementation of HBF
+    std_algo = OptimizationAlgorithm(
+        initial_state=x_0,
+        implementation=HBF(alpha=alpha, beta=beta),
+        stopping_criterion=stop_crit,
+        loss_function=test_functions[0],
+        n_max=n_train
+    )
+
+    return std_algo
+
+
 def evaluate_quad(loading_path: str) -> None:
     """Evaluate the trained model for the experiment on quadratic functions.
 
@@ -114,19 +146,13 @@ def evaluate_quad(loading_path: str) -> None:
     # Instantiate stopping criterion
     stop_crit = LossCriterion(eps=1e-20)
 
-    # Initialize HBF
-    # State space of HBF consists of current and previous iterate
-    # alpha and beta are set to the worst-case optimal choice
+    # Fix starting point.
+    # Note that HBF has a state-space of dimension 2*n
     x_0 = torch.zeros((2, dim))
-    alpha = 4 / ((torch.sqrt(L_max) + torch.sqrt(mu_min)) ** 2)
-    beta = ((torch.sqrt(L_max) - torch.sqrt(mu_min)) / (torch.sqrt(L_max) + torch.sqrt(mu_min))) ** 2
-    std_algo = OptimizationAlgorithm(
-        initial_state=x_0,
-        implementation=HBF(alpha=alpha, beta=beta),
-        stopping_criterion=stop_crit,
-        loss_function=test_functions[0],
-        n_max=n_train
-    )
+
+    # Initialize HBF
+    std_algo = init_std_algo(x_0=x_0, stop_crit=stop_crit, test_functions=test_functions, n_train=n_train,
+                             smoothness=L_max, strong_conv=mu_min)
 
     # Initialize the learned algorithm and load the trained model
     opt_algo = OptimizationAlgorithm(
