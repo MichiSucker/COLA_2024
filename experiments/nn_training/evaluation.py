@@ -194,7 +194,7 @@ def compute_iter_loss_dist_std_algo(net_std: NetStdTraining, data: dict, criteri
                                                      data=data,
                                                      num_it=num_approx_stat_points,
                                                      lr=lr_approx_stat_points)
-    cur_dist_std = compute_sq_dist_to_point(iterates=cur_iterates_std, point=approx_stat_point)
+    cur_dist_std = compute_sq_dist_to_point(iterates=torch.stack(cur_iterates_std), point=approx_stat_point)
 
     return cur_iterates_std, cur_losses_std, cur_dist_std
 
@@ -274,6 +274,7 @@ def load_algorithm(loading_path: str, test_functions: list, n_train: int, dim: i
     :param loading_path: path to the trained model (with name 'model.pt'
     :param test_functions: the test functions for evaluation
     :param n_train: number of iterations the algorithm was trained on
+    :param dim: dimension of optimization variable
     :return: the trained optimization algorithm
     """
 
