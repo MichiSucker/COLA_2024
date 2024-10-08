@@ -63,6 +63,12 @@ def compute_iterates(algo: OptimizationAlgorithm, num_iterates: int, dim: int) -
 
 
 def compute_sq_dist_to_point(iterates, point):
+    """Compute the squared Euclidean norm between the iterates and the point.
+
+    :param iterates: array of iterates of shape (n_iterates, dim)
+    :param point: corresponding point of shape (dim, )
+    :return: list of squared distances between each iterate and the point
+    """
     return [torch.linalg.norm(torch.tensor(iterates[j]) - point).item() ** 2 for j in range(len(iterates))]
 
 
