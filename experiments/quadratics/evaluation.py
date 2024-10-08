@@ -142,7 +142,7 @@ def evaluate_quad(loading_path: str) -> None:
         loss_function=test_functions[0],
         n_max=n_train
     )
-    opt_algo.implementation.load_state_dict(torch.load(loading_path + 'model.pt'))
+    opt_algo.implementation.load_state_dict(torch.load(loading_path + 'model.pt', weights_only=True))
 
     # Compute the solution for each problem by solving the linear system.
     solutions = np.array([np.linalg.solve(f.get_parameter()['A'], f.get_parameter()['b'])
