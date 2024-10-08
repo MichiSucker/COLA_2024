@@ -138,7 +138,7 @@ def compute_sq_dist(iterates: NDArray, solutions: NDArray) -> NDArray:
 
     :param iterates: given sequence of iterates as (n x m x d)-array
     :param solutions: points for which we want to compute the distance to as (n x d)-array
-    :return: the squared distance between the iterates and the solutions as (n, m)-array
+    :return: the squared distance between the iterates and the solutions as (n x m)-array
     """
     num_test_problems = iterates.shape[0]
     num_iterates = iterates.shape[1]
