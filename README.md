@@ -1,12 +1,14 @@
 # Convergence of Learned Algorithms
 ### by M. Sucker and P. Ochs
-This repository contains code to reproduce the results from our paper 'Convergence of Learned Algorithms to Stationary Points'.
+This repository contains code to reproduce the results from our paper 'Convergence of Learned Algorithms to Stationary Points', which can be found, for example, on arXiv. 
 
 ### Abstract
 Convergence in learning-to-optimize is hardly studied, because conventional convergence guarantees in optimization are based on geometric arguments, which cannot be applied easily to learned algorithms. Thus, we develop a probabilistic framework that resembles deterministic optimization and allows for transferring geometric arguments into learning-to-optimize. Our main theorem is a generalization result for parametric classes of potentially non-smooth, non-convex loss functions and establishes the convergence of learned optimization algorithms to stationary points with high probability. This can be seen as a statistical counterpart to the use of geometric safeguards to ensure convergence. To the best of our knowledge, we are the first to prove convergence of optimization algorithms in such a probabilistic framework.
 
-### Full paper
-The full paper can be found, for example, on arXiv. 
+### Experimental Results
+![Results of the experiment on quadratic functions.](experiments/quadratics/data/evaluation.pdf)
+
+![Results of the neural-network-training experiment.](experiments/nn_training/data/evaluation.pdf)
 
 ### Reproducing the Experiments
 If you want to reproduce the experiments, you have to adapt the file ```main.py```. In here, you have to specify three variables: ```exp_to_run```, ```path_nn```, and ```path_quad```. 
