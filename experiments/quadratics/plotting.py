@@ -113,3 +113,7 @@ def create_plot(loading_path: str) -> None:
     fig.savefig(loading_path + '/evaluation.pdf', dpi=300, bbox_inches='tight')
 
     print("Finished creating plot.")
+
+
+def create_thumbnail():
+    pass
