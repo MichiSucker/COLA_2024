@@ -125,7 +125,6 @@ def create_thumbnail(loading_path: str) -> None:
     print("Starting creating thumbnail.")
 
     # Specify plotting parameters
-    width = 2 * 234.8775    # AISTATS
     tex_fonts = {
         # Use LaTeX to write all text
         "text.usetex": True,
@@ -148,11 +147,8 @@ def create_thumbnail(loading_path: str) -> None:
     pac_bound_conv_prob = np.load(loading_path + 'pac_bound_conv_prob.npy')
 
     # Specify plot-layout.
-    subplots = (1, 1)
-    size = set_size(width=width, subplots=subplots)
-    fig, ax = plt.subplots(1, 1, figsize=size)
+    fig, ax = plt.subplots(1, 1, figsize=(4, 4))
 
-    # Right plot:
     # Plot estimates for sufficient-descent property, convergence probability, and the PAC-bound:
     # Plot histogram for sufficient-descent property.
     ax.hist(suff_desc_prob, bins=np.linspace(0.75, 1, 21), color=colors['conv_prob'],
@@ -183,6 +179,6 @@ def create_thumbnail(loading_path: str) -> None:
 
     # Save plot
     plt.tight_layout()
-    fig.savefig(loading_path + '/thumbnail.pdf', dpi=300, bbox_inches='tight')
+    fig.savefig(loading_path + '/thumbnail.png', dpi=300, bbox_inches='tight')
 
     print("Finished creating thumbnail.")
