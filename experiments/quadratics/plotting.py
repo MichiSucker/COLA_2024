@@ -115,5 +115,74 @@ def create_plot(loading_path: str) -> None:
     print("Finished creating plot.")
 
 
-def create_thumbnail():
-    pass
+def create_thumbnail(loading_path: str) -> None:
+    """Create a small thumbnail for the website.
+
+    :param loading_path: path, where the data of 'evaluation.py' is stored, and where the plot will be saved in the end.
+    :return: None
+    """
+
+    print("Starting creating thumbnail.")
+
+    # Specify plotting parameters
+    width = 2 * 234.8775    # AISTATS
+    tex_fonts = {
+        # Use LaTeX to write all text
+        "text.usetex": True,
+        "font.family": "serif",
+        'text.latex.preamble': r'\usepackage{amsfonts, mathrsfs}',
+        # Use 10pt font in plots, to match 10pt font in document
+        "axes.labelsize": 8,
+        "font.size": 8,
+        # Make the legend/label fonts quantile_distance little smaller
+        "legend.fontsize": 7,
+        "xtick.labelsize": 7,
+        "ytick.labelsize": 7
+    }
+    plt.rcParams.update(tex_fonts)
+    colors = {'std': '#3a86ff', 'pac': '#ff006e', 'other': '#8338ec', 'pac_bound': '#fb5607', 'conv_prob': '#ffbe0b'}
+
+    # Load data. It is assumed that the function 'evaluation.py' was run before.
+    suff_desc_prob = np.load(loading_path + 'suff_desc_prob.npy')
+    emp_conv_prob = np.load(loading_path + 'emp_conv_prob.npy')
+    pac_bound_conv_prob = np.load(loading_path + 'pac_bound_conv_prob.npy')
+
+    # Specify plot-layout.
+    subplots = (1, 1)
+    size = set_size(width=width, subplots=subplots)
+    fig, ax = plt.subplots(1, 1, figsize=size)
+
+    # Right plot:
+    # Plot estimates for sufficient-descent property, convergence probability, and the PAC-bound:
+    # Plot histogram for sufficient-descent property.
+    ax.hist(suff_desc_prob, bins=np.linspace(0.75, 1, 21), color=colors['conv_prob'],
+            edgecolor=colors['conv_prob'], alpha=0.5)
+    ax.axvline(np.mean(suff_desc_prob), 0, 1,
+               color=colors['conv_prob'], linestyle='dashed',
+               label='$\mathbb{P}_{(\mathscr{P}, \\xi) \\vert \mathscr{H}} \{ \mathsf{A} \}$')
+    ax.axvline(np.median(suff_desc_prob), 0, 1, color=colors['conv_prob'], linestyle='dotted')
+
+    # Plot convergence probability
+    ax.hist(emp_conv_prob, bins=np.linspace(0.75, 1, 21),
+            color=colors['other'], edgecolor=colors['other'], alpha=0.5)
+    ax.axvline(np.mean(emp_conv_prob), 0, 1,
+               color=colors['other'], linestyle='dashed',
+               label='$\mathbb{P}_{(\mathscr{P}, \\xi) \\vert \mathscr{H}} \{ \mathsf{A}_{\mathrm{conv}} \}$')
+    ax.axvline(np.median(emp_conv_prob), 0, 1, color=colors['other'], linestyle='dotted')
+
+    # Plot pac-bound
+    ax.axvline(pac_bound_conv_prob, 0, 1, color=colors['pac_bound'], linestyle='dotted', label='PAC-bound')
+
+    # Adjust ticks, title, grid, etc.
+    ax.set_xticks([i * 0.1 for i in range(7, 11)])
+    ax.set_xticks([i * 0.025 for i in range(28, 41)], minor=True)
+    ax.set(title=f'Conv. Prob.', xlabel='$p$')
+    ax.grid('on', which='major')
+    ax.grid('on', which='minor', alpha=0.25)
+    ax.legend()
+
+    # Save plot
+    plt.tight_layout()
+    fig.savefig(loading_path + '/thumbnail.pdf', dpi=300, bbox_inches='tight')
+
+    print("Finished creating thumbnail.")
