@@ -131,10 +131,10 @@ def create_thumbnail(loading_path: str) -> None:
         "font.family": "serif",
         'text.latex.preamble': r'\usepackage{amsfonts, mathrsfs}',
         # Use 10pt font in plots, to match 10pt font in document
-        "axes.labelsize": 8,
-        "font.size": 8,
+        "axes.labelsize": 10,
+        "font.size": 10,
         # Make the legend/label fonts quantile_distance little smaller
-        "legend.fontsize": 7,
+        "legend.fontsize": 9,
         "xtick.labelsize": 7,
         "ytick.labelsize": 7
     }
@@ -172,13 +172,13 @@ def create_thumbnail(loading_path: str) -> None:
     # Adjust ticks, title, grid, etc.
     ax.set_xticks([i * 0.1 for i in range(7, 11)])
     ax.set_xticks([i * 0.025 for i in range(28, 41)], minor=True)
-    ax.set(title=f'Conv. Prob.', xlabel='$p$')
+    ax.set(title=f'Convergence Probability', xlabel='$p$')
     ax.grid('on', which='major')
     ax.grid('on', which='minor', alpha=0.25)
     ax.legend()
 
     # Save plot
     plt.tight_layout()
-    fig.savefig(loading_path + '/thumbnail.png', dpi=300, bbox_inches='tight')
+    fig.savefig(loading_path + '/thumbnail.png', dpi=100, bbox_inches='tight')
 
     print("Finished creating thumbnail.")
