@@ -7,7 +7,7 @@ class LossFunction:
 
     Attributes
     ----------
-        func : Callable
+        f : Callable
             the loss-function
 
     Methods
