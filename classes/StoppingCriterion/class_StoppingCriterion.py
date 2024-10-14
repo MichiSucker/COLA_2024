@@ -6,7 +6,7 @@ class StoppingCriterion:
 
     Attributes
     ----------
-        func : Callable
+        criterion : Callable
             the stopping criterion
     """
 
