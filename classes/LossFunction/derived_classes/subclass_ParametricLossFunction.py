@@ -7,10 +7,8 @@ class ParametricLossFunction(LossFunction):
 
     Attributes
     ----------
-        func : Callable
-            the loss-function
-        p : dict
-            the parameter
+        parameter : dict
+            parameter of the loss-function
 
     Methods
     -------
