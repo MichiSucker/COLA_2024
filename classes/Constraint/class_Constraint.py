@@ -8,7 +8,7 @@ class Constraint:
 
     Attributes
     ----------
-        func : Callable
+        f : Callable
             the constraint
     """
 
