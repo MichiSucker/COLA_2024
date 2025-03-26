@@ -1,6 +1,6 @@
 # Convergence of Learned Algorithms
-### by Anonymous Author (will be added after decision)
-This repository contains code to reproduce the results from our paper 'Convergence of Learned Algorithms to Stationary Points', which can be found, for example, on (left blank for anonymity). 
+### by Michael Sucker and Peter Ochs
+This repository contains code to reproduce the results from our paper ["A Generalization Result for Convergence in Learning-to-Optimize"](https://arxiv.org/pdf/2410.07704). 
 
 ### Abstract
 Convergence in learning-to-optimize is hardly studied, because conventional convergence guarantees in optimization are based on geometric arguments, which cannot be applied easily to learned algorithms. Thus, we develop a probabilistic framework that resembles deterministic optimization and allows for transferring geometric arguments into learning-to-optimize. Our main theorem is a generalization result for parametric classes of potentially non-smooth, non-convex loss functions and establishes the convergence of learned optimization algorithms to stationary points with high probability. This can be seen as a statistical counterpart to the use of geometric safeguards to ensure convergence. To the best of our knowledge, we are the first to prove convergence of optimization algorithms in such a probabilistic framework.
